@@ -386,13 +386,13 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
-        // 1. SUPABASE CREDENTIALS - Fixed initialization!
+        // 1. SUPABASE CREDENTIALS - Using "client" to avoid naming collisions!
         const supabaseUrl = 'https://jpjtsvsxdwwwknwggblo.supabase.co';
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpwanRzdnN4ZHd3d2tud2dnYmxvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIzNzMyNjAsImV4cCI6MjA5Nzk0OTI2MH0.7zobBlNHYyMPUhW-Ps_SbEbtdh_Nxe9kM6FvvwVS-vE';
         
-        // Critical Fix: window.supabase instead of just supabase
-        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+        const client = window.supabase.createClient(supabaseUrl, supabaseKey);
 
         let currentUser = null;
         let activeStudentId = null;
@@ -400,7 +400,7 @@
 
         // Check login status on page load
         window.addEventListener('DOMContentLoaded', async () => {
-            const { data: { session } } = await supabase.auth.getSession();
+            const { data: { session } } = await client.auth.getSession();
             if (session) {
                 handleUserAuthenticated(session.user);
             } else {
@@ -431,7 +431,7 @@
             document.getElementById('auth-toggle-btn').innerText = isSignUpMode ? "Log In" : "Sign Up";
         };
 
-        // Handle the Auth form action (With Smart Auto-Login)
+        // Handle the Auth form action
         window.handleAuth = async function() {
             const email = document.getElementById('auth-email').value;
             const password = document.getElementById('auth-password').value;
@@ -442,7 +442,7 @@
 
             if (isSignUpMode) {
                 // SIGN UP LOGIC
-                const { data, error } = await supabase.auth.signUp({ email, password });
+                const { data, error } = await client.auth.signUp({ email, password });
                 
                 if (error) { 
                     alert("Sign up error: " + error.message); 
@@ -457,7 +457,7 @@
                 }
             } else {
                 // LOG IN LOGIC
-                const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+                const { data, error } = await client.auth.signInWithPassword({ email, password });
                 
                 if (error) { 
                     alert("Log in error: " + error.message); 
@@ -478,13 +478,13 @@
 
         // Sign Out
         window.handleSignOut = async function() {
-            await supabase.auth.signOut();
+            await client.auth.signOut();
             window.location.reload();
         };
 
         // Load students for this authenticated Tutor
         window.loadStudents = async function() {
-            const { data: students, error } = await supabase
+            const { data: students, error } = await client
                 .from('students')
                 .select('*')
                 .eq('tutor_id', currentUser.id)
@@ -539,7 +539,7 @@
 
             if (!name) return alert("Please enter a name!");
 
-            const { error } = await supabase.from('students').insert([{
+            const { error } = await client.from('students').insert([{
                 tutor_id: currentUser.id, name, year_group: yearGroup, subject, goal, parent_contact: parentContact, tracking_rules: trackingRules
             }]);
 
@@ -576,11 +576,40 @@
         window.deleteActiveStudent = async function() {
             if (!activeStudentId) return;
             if (confirm("Permanently delete this student and all records?")) {
-                await supabase.from('students').delete().eq('id', activeStudentId);
+                await client.from('students').delete().eq('id', activeStudentId);
                 activeStudentId = null;
                 loadStudents();
                 switchView('todos');
             }
+        };
+
+        // UI Toggles (Checkboxes, Toggles, etc)
+        window.toggleTodo = function(checkbox) {
+            if (checkbox.checked) checkbox.parentElement.classList.add('completed');
+            else checkbox.parentElement.classList.remove('completed');
+        };
+        window.toggleSection = function(sectionId) {
+            document.getElementById(sectionId).classList.toggle('hidden');
+        };
+        window.toggleEditNote = function(noteId, enteringEdit) {
+            const container = document.getElementById(noteId);
+            if (enteringEdit) {
+                container.querySelector('.view-state').classList.add('hidden');
+                container.querySelector('.edit-state').classList.remove('hidden');
+            } else {
+                container.querySelector('.edit-state').classList.add('hidden');
+                container.querySelector('.view-state').classList.remove('hidden');
+            }
+        };
+        window.markSent = function(btnId) {
+            const btn = document.getElementById(btnId);
+            btn.innerHTML = '✅ Sent';
+            btn.style.backgroundColor = '#dcfce7';
+            btn.style.color = '#166534';
+            btn.style.borderColor = '#bbf7d0';
+        };
+        window.toggleMiniTodo = function() {
+            document.getElementById('mini-todo-form').classList.toggle('hidden');
         };
     </script>
 </body>
