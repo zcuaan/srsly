@@ -543,8 +543,10 @@
             document.getElementById('active-student-goal').innerText = student.goal || '-';
             document.getElementById('active-student-contact').innerText = student.parent_contact || '-';
             document.getElementById('active-student-rules').innerText = student.tracking_rules || 'None';
+            
 
             switchView('student');
+            loadTimeline(); // <--- ADD THIS LINE
         };
 
         // Open Add Modal
@@ -683,6 +685,91 @@
             document.getElementById('mini-todo-form').classList.toggle('hidden');
         };
 
+        // Fetches lessons from Supabase and renders the timeline & snapshot
+window.loadTimeline = async function() {
+    const container = document.getElementById('timeline-container');
+    container.innerHTML = '<div style="color: var(--text-muted); text-align: center; margin-top: 40px;">Loading timeline...</div>';
+
+    if (!activeStudentId) return;
+
+    // Fetch lessons for this student
+    const { data: lessons, error } = await client
+        .from('lessons')
+        .select('*')
+        .eq('student_id', activeStudentId)
+        .order('lesson_date', { ascending: false });
+
+    if (error) {
+        container.innerHTML = `<div style="color: red; text-align: center; margin-top: 40px;">Error loading timeline: ${error.message}</div>`;
+        return;
+    }
+
+    // --- NEW: UPDATE THE MEMORY SNAPSHOT ---
+    const snapshotWarning = document.querySelector('.warning-box');
+    const snapshotList = document.querySelector('.snapshot-list');
+    
+    if (lessons.length > 0) {
+        snapshotWarning.classList.add('hidden'); // Hide the warning
+        const latestSnapshot = lessons[0].snapshot_data || {};
+        
+        snapshotList.innerHTML = `
+            <li><strong>Contact:</strong> <span>${activeStudent.parent_contact || '-'}</span></li>
+            <li><strong>Custom Rules:</strong> <span>${activeStudent.tracking_rules || 'None set'}</span></li>
+            <li style="margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border);">
+                <strong>⚠️ Recurring:</strong> <span style="color: var(--text-muted);">${latestSnapshot.recurring_issues || 'None detected yet.'}</span>
+            </li>
+            <li style="margin-top: 6px;">
+                <strong>📈 Progress:</strong> <span style="color: var(--text-muted);">${latestSnapshot.progress_notes || 'Keep adding notes to build patterns.'}</span>
+            </li>
+        `;
+    } else {
+        snapshotWarning.classList.remove('hidden');
+        snapshotList.innerHTML = `
+            <li><strong>Contact:</strong> <span>${activeStudent.parent_contact || '-'}</span></li>
+            <li><strong>Custom Rules:</strong> <span>${activeStudent.tracking_rules || 'None set'}</span></li>
+        `;
+        container.innerHTML = '<div style="color: var(--text-muted); text-align: center; margin-top: 40px;">No lesson notes saved yet for this student.</div>';
+        return;
+    }
+
+    // --- RENDER THE TIMELINE ---
+    container.innerHTML = ''; 
+    lessons.forEach(lesson => {
+        const metrics = lesson.metrics || {};
+        
+        const cardHtml = `
+            <div class="lesson-card">
+                <div class="lesson-date-title">${new Date(lesson.lesson_date).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'short' })}</div>
+                
+                <div class="lesson-metrics" style="margin-top: 12px;">
+                    <span class="pill gray">🎯 Score: ${metrics.Score || 'N/A'}</span>
+                    <span class="pill strength">💪 Strength: ${metrics.Strength || 'N/A'}</span>
+                    <span class="pill weakness">⚠️ Focus: ${metrics.Weakness || 'N/A'}</span>
+                </div>
+
+                <div class="lesson-hw-next">
+                    <strong>Homework & Next Steps:</strong>
+                    <div style="color: var(--text-muted);">${lesson.homework_next_steps || 'None set.'}</div>
+                </div>
+
+                <div class="expandable-section section-parent">
+                    <div class="parent-header">
+                        💬 Parent Update Draft
+                        <button class="btn-copy" onclick="navigator.clipboard.writeText('${(lesson.parent_update || '').replace(/'/g, "\\'")}'); this.innerText='Copied!'; setTimeout(() => this.innerText='Copy', 2000);">Copy</button>
+                    </div>
+                    <div>${lesson.parent_update || 'No update generated.'}</div>
+                </div>
+                
+                <details style="margin-top: 16px; font-size: 12px; color: var(--text-muted);">
+                    <summary style="cursor: pointer; font-weight: 600;">View Raw Note</summary>
+                    <div style="padding-top: 8px; font-style: italic;">"${lesson.raw_note}"</div>
+                </details>
+            </div>
+        `;
+        container.insertAdjacentHTML('beforeend', cardHtml);
+    });
+};
+
         // Connects the AI Brain to the Hero Input
 window.processLessonNote = async function() {
     const rawNoteInput = document.getElementById('lesson-raw-input');
@@ -727,7 +814,9 @@ window.processLessonNote = async function() {
 
         // Clear input and reset UI
         rawNoteInput.value = '';
-        alert("Success! Lesson structured and saved to timeline.");
+        
+        // Reload the timeline dynamically without alerting!
+        await loadTimeline();
 
     } catch (err) {
         alert("Error: " + err.message);
