@@ -292,7 +292,10 @@
                     <span><strong>Goal:</strong> <span id="active-student-goal">-</span></span>
                 </div>
             </div>
-            <button class="btn-danger" onclick="deleteActiveStudent()">🗑️ Delete Student</button>
+            <div style="display: flex; gap: 12px; height: 36px;">
+                <button class="secondary" onclick="openEditModal()">✏️ Edit</button>
+                <button class="btn-danger" onclick="deleteActiveStudent()">🗑️ Delete</button>
+            </div>
         </div>
 
         <div class="workspace">
@@ -396,7 +399,9 @@
 
         let currentUser = null;
         let activeStudentId = null;
+        let activeStudent = null;
         let isSignUpMode = false;
+        let isEditing = false; 
 
         // Check login status on page load
         window.addEventListener('DOMContentLoaded', async () => {
@@ -513,6 +518,7 @@
         // Select and view a specific student
         window.selectStudent = function(student) {
             activeStudentId = student.id;
+            activeStudent = student; // Store full object for editing
             
             // Manage UI states
             document.querySelectorAll('.student-item').forEach(el => el.classList.remove('active'));
@@ -527,7 +533,41 @@
             switchView('student');
         };
 
-        // Save new student to Supabase
+        // Open Add Modal
+        window.openModal = function() { 
+            isEditing = false;
+            document.querySelector('.modal-content h2').innerText = "➕ Add New Student";
+            document.getElementById('confirm-add-student-btn').innerText = "Save Student";
+            
+            // Clear inputs
+            document.querySelectorAll('.modal-input').forEach(i => i.value = '');
+            document.getElementById('add-student-modal').classList.remove('hidden'); 
+        };
+
+        // Open Edit Modal & Populate Data
+        window.openEditModal = function() {
+            if (!activeStudent) return;
+            isEditing = true;
+            document.querySelector('.modal-content h2').innerText = "✏️ Edit Student";
+            document.getElementById('confirm-add-student-btn').innerText = "Update Student";
+            
+            const inputs = document.querySelectorAll('.modal-input');
+            inputs[0].value = activeStudent.name || '';
+            inputs[1].value = activeStudent.year_group || '';
+            inputs[2].value = activeStudent.subject || '';
+            inputs[3].value = activeStudent.goal || '';
+            inputs[4].value = activeStudent.parent_contact || '';
+            inputs[5].value = activeStudent.tracking_rules || '';
+            
+            document.getElementById('add-student-modal').classList.remove('hidden');
+        };
+
+        // Close Modal
+        window.closeModal = function() { 
+            document.getElementById('add-student-modal').classList.add('hidden'); 
+        };
+
+        // Save (Insert) or Update existing student in Supabase
         window.saveStudent = async function() {
             const inputs = document.querySelectorAll('.modal-input');
             const name = inputs[0].value;
@@ -539,16 +579,37 @@
 
             if (!name) return alert("Please enter a name!");
 
-            const { error } = await client.from('students').insert([{
-                tutor_id: currentUser.id, name, year_group: yearGroup, subject, goal, parent_contact: parentContact, tracking_rules: trackingRules
-            }]);
+            let error;
+            if (isEditing) {
+                // UPDATE existing record
+                const { error: updateError } = await client.from('students')
+                    .update({ name, year_group: yearGroup, subject, goal, parent_contact: parentContact, tracking_rules: trackingRules })
+                    .eq('id', activeStudentId);
+                error = updateError;
+            } else {
+                // INSERT new record
+                const { error: insertError } = await client.from('students')
+                    .insert([{ tutor_id: currentUser.id, name, year_group: yearGroup, subject, goal, parent_contact: parentContact, tracking_rules: trackingRules }]);
+                error = insertError;
+            }
 
             if (error) {
                 alert("Error saving student: " + error.message);
             } else {
                 closeModal();
-                inputs.forEach(i => i.value = '');
-                loadStudents();
+                loadStudents(); // Refresh sidebar list
+                
+                // If editing, instantly update the dashboard text without reloading
+                if (isEditing) {
+                    document.getElementById('active-student-name').innerText = name;
+                    document.getElementById('active-student-subject').innerText = subject || '-';
+                    document.getElementById('active-student-goal').innerText = goal || '-';
+                    document.getElementById('active-student-contact').innerText = parentContact || '-';
+                    document.getElementById('active-student-rules').innerText = trackingRules || 'None';
+                    
+                    // Update our stored object
+                    activeStudent = { ...activeStudent, name, year_group: yearGroup, subject, goal, parent_contact: parentContact, tracking_rules: trackingRules };
+                }
             }
         };
 
@@ -567,10 +628,6 @@
             if (viewName === 'resources') document.getElementById('nav-resources').classList.add('active');
             if (viewName === 'settings') document.getElementById('nav-settings').classList.add('active');
         };
-
-        // Modals Toggle
-        window.openModal = function() { document.getElementById('add-student-modal').classList.remove('hidden'); };
-        window.closeModal = function() { document.getElementById('add-student-modal').classList.add('hidden'); };
 
         // Delete Student Engine
         window.deleteActiveStudent = async function() {
