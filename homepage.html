@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tutor Log | The Magic Memory System for Tutors</title>
+    <style>
+        :root {
+            /* Warm Minimalist Palette */
+            --bg-main: #ffffff;
+            --bg-secondary: #f7f7f5;
+            --bg-hover: #efefed;
+            
+            --text-main: #37352f;
+            --text-muted: #787774;
+            --border: #e9e9e7;
+            
+            --primary: #2383e2; 
+            --primary-hover: #1e70c1;
+            
+            /* Pastel Tags */
+            --tag-green-bg: #e6eed5;
+            --tag-green-text: #416024;
+            --tag-gray-bg: #f1f1ef;
+            --tag-gray-text: #505050;
+            --callout-yellow-bg: #fbf3db;
+            --callout-yellow-border: #f0e5c8;
+            --callout-yellow-text: #896c24;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            margin: 0; padding: 0; 
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Navigation */
+        nav {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 20px 40px; max-width: 1200px; margin: 0 auto;
+        }
+        .logo { font-size: 20px; font-weight: 700; color: var(--text-main); letter-spacing: -0.02em; text-decoration: none; cursor: pointer; }
+        .nav-links { display: flex; gap: 24px; align-items: center; }
+        .nav-links a { color: var(--text-muted); text-decoration: none; font-weight: 500; font-size: 14px; transition: color 0.2s; cursor: pointer; }
+        .nav-links a:hover { color: var(--text-main); }
+        .btn-nav { background: var(--bg-main); border: 1px solid var(--border); padding: 8px 16px; border-radius: 6px; font-weight: 600; cursor: pointer; color: var(--text-main); transition: all 0.2s;}
+        .btn-nav:hover { background: var(--bg-hover); }
+
+        /* General Page Container */
+        .page-section { display: none; min-height: 80vh; padding: 60px 20px; max-width: 800px; margin: 0 auto; }
+        .page-section.active { display: block; }
+        .page-title { font-size: 40px; font-weight: 800; letter-spacing: -0.03em; margin-bottom: 40px; }
+
+        /* Hero Section */
+        .hero { padding: 80px 20px 60px 20px; text-align: center; max-width: 800px; margin: 0 auto; }
+        .pill-badge { display: inline-block; background: var(--callout-yellow-bg); color: var(--callout-yellow-text); border: 1px solid var(--callout-yellow-border); padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 24px; }
+        .hero h1 { font-size: 56px; font-weight: 800; letter-spacing: -0.03em; margin: 0 0 20px 0; line-height: 1.1; color: var(--text-main); }
+        .hero p { font-size: 20px; color: var(--text-muted); margin: 0 0 40px 0; max-width: 600px; margin-left: auto; margin-right: auto; }
+        .hero-ctas { display: flex; justify-content: center; gap: 16px; }
+        .btn-primary { background-color: var(--primary); color: white; border: none; padding: 16px 28px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 16px; transition: background-color 0.2s; text-decoration: none; display: inline-block; }
+        .btn-primary:hover { background-color: var(--primary-hover); }
+
+        /* Realistic App Mockup Window */
+        .mockup-container { max-width: 1100px; margin: 0 auto 100px auto; padding: 0 20px; }
+        .mockup-window { background: var(--bg-main); border: 1px solid var(--border); border-radius: 12px; box-shadow: 0 24px 48px rgba(0,0,0,0.12); overflow: hidden; display: flex; flex-direction: column; text-align: left; height: 600px; }
+        .mockup-header { background: var(--bg-secondary); border-bottom: 1px solid var(--border); padding: 12px 20px; display: flex; gap: 8px; }
+        .dot { width: 12px; height: 12px; border-radius: 50%; background: #e0e0e0; }
+        
+        /* App Inside the Mockup */
+        .mockup-app { display: flex; height: 100%; }
+        .mockup-sidebar { width: 220px; background: var(--bg-secondary); border-right: 1px solid var(--border); padding: 20px 0; display: flex; flex-direction: column; }
+        .m-logo { font-weight: 700; padding: 0 20px 24px 20px; font-size: 16px; }
+        .m-nav-item { padding: 6px 20px; font-size: 13px; color: var(--text-muted); font-weight: 500; }
+        .m-nav-item.active { background: var(--bg-hover); color: var(--text-main); font-weight: 600;}
+        
+        .mockup-main { flex: 1; padding: 30px 40px; display: flex; flex-direction: column; background: #fff; overflow: hidden;}
+        .m-header { margin-bottom: 24px; }
+        .m-header h2 { margin: 0 0 4px 0; font-size: 24px; }
+        .m-header p { margin: 0; font-size: 13px; color: var(--text-muted); }
+        
+        .m-grid { display: grid; grid-template-columns: 1fr 1.2fr; gap: 30px; }
+        .m-card { border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin-bottom: 20px; box-shadow: 0 1px 2px rgba(0,0,0,0.02);}
+        .m-card h3 { font-size: 14px; margin: 0 0 12px 0; }
+        .m-textarea { background: var(--bg-main); border: 1px solid var(--primary); box-shadow: 0 0 0 2px rgba(35, 131, 226, 0.1); border-radius: 6px; padding: 12px; font-size: 13px; color: var(--text-main); height: 80px; margin-bottom: 12px; }
+        .m-btn { background: var(--primary); color: white; padding: 8px; border-radius: 6px; text-align: center; font-weight: 600; font-size: 13px; }
+        
+        .m-warning { background: var(--callout-yellow-bg); border: 1px solid var(--callout-yellow-border); color: var(--callout-yellow-text); padding: 10px 12px; border-radius: 6px; font-size: 13px; margin-bottom: 12px;}
+        
+        .m-timeline-item { border-bottom: 1px solid var(--border); padding-bottom: 16px; margin-bottom: 16px; }
+        .m-timeline-date { font-weight: 600; font-size: 14px; margin-bottom: 4px;}
+        .m-pill-container { display: flex; gap: 6px; margin-bottom: 8px;}
+        .m-pill { font-size: 11px; padding: 2px 6px; border-radius: 4px; font-weight: 500;}
+        .m-whatsapp { background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; padding: 10px; border-radius: 6px; font-size: 12px; }
+
+        /* Features Section */
+        .features { background: var(--bg-secondary); padding: 100px 20px; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+        .features-grid { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: repeat(3, 1fr); gap: 40px; }
+        .feature-item h3 { font-size: 18px; margin: 0 0 12px 0; color: var(--text-main); }
+        .feature-item p { font-size: 15px; color: var(--text-muted); margin: 0; }
+        .feature-icon { font-size: 32px; margin-bottom: 16px; }
+
+        /* Typography & Content Layouts for Subpages */
+        h2 { font-size: 24px; margin-top: 40px; margin-bottom: 16px; }
+        p { margin-bottom: 16px; color: var(--text-muted); }
+        ul { color: var(--text-muted); margin-bottom: 24px; padding-left: 20px; }
+        li { margin-bottom: 8px; }
+        .faq-item { margin-bottom: 30px; }
+        .faq-item h3 { font-size: 18px; margin-bottom: 8px; color: var(--text-main); }
+
+        /* Footer */
+        footer { padding: 60px 20px; max-width: 1200px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border); margin-top: 60px; }
+        .footer-left { color: var(--text-muted); font-size: 14px; }
+        .footer-links { display: flex; gap: 20px; }
+        .footer-links a { color: var(--text-muted); text-decoration: none; font-size: 14px; transition: color 0.2s; cursor: pointer;}
+        .footer-links a:hover { color: var(--text-main); }
+
+        @media (max-width: 768px) {
+            .hero h1 { font-size: 40px; }
+            .features-grid, .m-grid { grid-template-columns: 1fr; }
+            .mockup-sidebar { display: none; }
+            footer { flex-direction: column; gap: 20px; text-align: center; }
+        }
+    </style>
+</head>
+<body>
+
+    <nav>
+        <a onclick="navigate('home')" class="logo">🦀 Tutor Log</a>
+        <div class="nav-links">
+            <a onclick="navigate('about')">About</a>
+            <a onclick="navigate('faq')">FAQs</a>
+            <a href="app.html" class="btn-nav">Login / Sign Up</a>
+        </div>
+    </nav>
+
+    <div id="page-home" class="page-section active">
+        <header class="hero">
+            <span class="pill-badge">Now in Beta</span>
+            <h1>The magic memory system for private tutors.</h1>
+            <p>Type one messy post-lesson note. We automatically organize your timeline, track recurring weaknesses, and draft your parent updates in seconds.</p>
+            <div class="hero-ctas">
+                <a href="app.html" class="btn-primary">Start Using Tutor Log</a>
+            </div>
+        </header>
+
+        <div class="mockup-container">
+            <div class="mockup-window">
+                <div class="mockup-header">
+                    <div class="dot" style="background: #ff5f56;"></div>
+                    <div class="dot" style="background: #ffbd2e;"></div>
+                    <div class="dot" style="background: #27c93f;"></div>
+                </div>
+                <div class="mockup-app">
+                    <div class="mockup-sidebar">
+                        <div class="m-logo">🦀 Tutor Log</div>
+                        <div style="font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; padding: 0 20px 8px 20px;">My Students</div>
+                        <div class="m-nav-item active">Mia (Year 8)</div>
+                        <div class="m-nav-item">Alex (Year 11)</div>
+                        <div class="m-nav-item">Sam (Year 6)</div>
+                    </div>
+                    <div class="mockup-main">
+                        <div class="m-header">
+                            <h2>Mia (Year 8)</h2>
+                            <p><strong>Subject:</strong> Maths &nbsp;|&nbsp; <strong>Goal:</strong> GCSE Foundation</p>
+                        </div>
+                        <div class="m-grid">
+                            <div>
+                                <div class="m-card">
+                                    <h3>📝 What happened today?</h3>
+                                    <div class="m-textarea">
+                                        "Mia got 8/10 on her quiz. Method is getting better but still messing up negative signs. Homework is Ex 4B."
+                                    </div>
+                                    <div class="m-btn">Save & create update</div>
+                                </div>
+                                <div class="m-card">
+                                    <h3>🧠 Memory Snapshot</h3>
+                                    <div class="m-warning"><strong>⚠️ Recurring Pattern:</strong> Struggled with negative signs 3 times this month.</div>
+                                    <div style="font-size: 13px; line-height: 1.8;">
+                                        <strong>Average Score:</strong> 74% <span class="m-pill" style="background: var(--tag-green-bg); color: var(--tag-green-text);">Trending Up</span><br>
+                                        <strong>Package:</strong> 2 Lessons Remaining
+                                    </div>
+                                </div>
+                            </div>
+                            <div>
+                                <div style="font-weight: 600; margin-bottom: 16px; border-bottom: 1px solid var(--border); padding-bottom: 8px;">Student timeline</div>
+                                
+                                <div class="m-timeline-item">
+                                    <div class="m-timeline-date">June 25, 2026 — Factorising</div>
+                                    <div class="m-pill-container">
+                                        <span class="m-pill" style="background: var(--tag-gray-bg);">Score 8/10</span>
+                                        <span class="m-pill" style="background: var(--tag-green-bg); color: var(--tag-green-text);">Method improving</span>
+                                    </div>
+                                    <div class="m-whatsapp">
+                                        <strong>Draft Update:</strong><br>
+                                        "Hi! Mia worked well today. She got 8/10 on her starter quiz and her method is improving. For homework..."
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <section class="features" style="margin: 0 -20px;">
+            <div class="features-grid">
+                <div class="feature-item">
+                    <div class="feature-icon">🧠</div>
+                    <h3>Brain-Dump Input</h3>
+                    <p>Don't waste time filling out complex CRM forms. Just type how the lesson went in plain English and let the AI do the sorting.</p>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">📈</div>
+                    <h3>Automatic Tracking</h3>
+                    <p>Tutor Log spots recurring mistakes across lessons, tracks test scores over time, and builds a perfect chronological timeline.</p>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">📱</div>
+                    <h3>1-Click Parent Updates</h3>
+                    <p>Instantly generate professional, polite summaries of the lesson and homework to copy straight into WhatsApp or Email.</p>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <div id="page-about" class="page-section">
+        <h1 class="page-title">About Tutor Log</h1>
+        <p style="font-size: 18px; color: var(--text-main);">Built for tutors who love teaching, but hate admin.</p>
+        
+        <h2>The Problem</h2>
+        <p>If you tutor multiple students, you know the cognitive load of keeping track of everything. What worksheet did Alex do last week? Did I remind Sam's mum about the invoice? What specific algebra topic did Mia struggle with two months ago?</p>
+        <p>Most CRMs and scheduling tools are built for massive agencies. They force you to click through 10 different dropdown menus just to log a simple lesson.</p>
+
+        <h2>The Solution</h2>
+        <p>Tutor Log is built around how human brains actually work. You finish a lesson, you type out a messy, fast brain-dump of what happened, and you hit save. That's it.</p>
+        <p>Our AI reads your note, extracts the scores, logs the homework, writes a polite message for the parents, and scans the student's history to warn you about recurring weaknesses. It takes 60 seconds, and it gives you a perfect memory.</p>
+    </div>
+
+    <div id="page-faq" class="page-section">
+        <h1 class="page-title">Frequently Asked Questions</h1>
+        
+        <div class="faq-item">
+            <h3>How does the AI work?</h3>
+            <p>Tutor Log uses advanced Language Models (like GPT-4) securely under the hood. When you submit a raw note, the AI structures it into metrics, action items, and text summaries without altering your original meaning.</p>
+        </div>
+        <div class="faq-item">
+            <h3>Is my student data secure?</h3>
+            <p>Yes. Your data is encrypted in transit and at rest using industry-standard database security (powered by Supabase). We do not use your notes to train public AI models.</p>
+        </div>
+        <div class="faq-item">
+            <h3>Can I track custom things?</h3>
+            <p>Absolutely. Every student has a "Tracking Rules" setting. You can tell the AI: <em>"Always track Mia's spelling test scores out of 20"</em>, and it will pull that specific data out of your messy notes every time.</p>
+        </div>
+        <div class="faq-item">
+            <h3>Do I need to download an app?</h3>
+            <p>No, Tutor Log is a web application. It works beautifully on your laptop browser right after a Zoom lesson, or on your phone browser while you are sitting on the bus.</p>
+        </div>
+    </div>
+
+    <div id="page-terms" class="page-section">
+        <h1 class="page-title">Terms and Conditions</h1>
+        <p><strong>Last Updated: June 2026</strong></p>
+        
+        <h2>1. Acceptance of Terms</h2>
+        <p>By accessing or using Tutor Log ("the Service"), you agree to be bound by these Terms. If you disagree with any part of the terms, you may not access the Service.</p>
+        
+        <h2>2. Use of Service</h2>
+        <p>Tutor Log provides a note-taking and management tool for educators. You agree to use this service only for lawful purposes and in accordance with these Terms.</p>
+        
+        <h2>3. User Accounts</h2>
+        <p>You are responsible for safeguarding the password that you use to access the Service. You must notify us immediately upon becoming aware of any breach of security or unauthorized use of your account.</p>
+
+        <h2>4. Data Ownership</h2>
+        <p>You retain all rights to the data, notes, and information you input into Tutor Log. We claim no ownership over your intellectual property or student records.</p>
+    </div>
+
+    <div id="page-privacy" class="page-section">
+        <h1 class="page-title">Privacy Policy</h1>
+        <p><strong>Last Updated: June 2026</strong></p>
+        
+        <h2>1. Information We Collect</h2>
+        <p>We collect information you provide directly to us when you create an account, including your email address. We also store the educational notes, student names, and metrics you choose to input into the system.</p>
+        
+        <h2>2. How We Use Your Information</h2>
+        <p>We use the information we collect to provide, maintain, and improve our services. Specifically, your notes are processed by our AI partners (OpenAI) strictly for the purpose of generating your personal dashboard metrics and summaries. <strong>Your data is never used to train external or public AI models.</strong></p>
+        
+        <h2>3. Data Security</h2>
+        <p>We use Supabase for our database infrastructure, ensuring industry-standard security practices, including data encryption in transit and at rest.</p>
+        
+        <h2>4. Your Rights</h2>
+        <p>You have the right to access, update, or delete your information at any time directly through the application settings.</p>
+    </div>
+
+    <footer>
+        <div class="footer-left">
+            <span style="font-weight: 700; color: var(--text-main);">🦀 Tutor Log</span> &copy; 2026
+        </div>
+        <div class="footer-links">
+            <a onclick="navigate('home')">Home</a>
+            <a onclick="navigate('about')">About</a>
+            <a onclick="navigate('faq')">FAQs</a>
+            <a onclick="navigate('terms')">Terms</a>
+            <a onclick="navigate('privacy')">Privacy</a>
+        </div>
+    </footer>
+
+    <script>
+        // Simple Single Page App Router
+        function navigate(pageId) {
+            // Hide all pages
+            const pages = document.querySelectorAll('.page-section');
+            pages.forEach(page => page.classList.remove('active'));
+            
+            // Show target page
+            document.getElementById('page-' + pageId).classList.add('active');
+            
+            // Scroll to top
+            window.scrollTo(0, 0);
+        }
+    </script>
+</body>
+</html>
