@@ -716,15 +716,15 @@
                 snapshotWarning.classList.add('hidden');
                 const latestSnapshot = lessons[0].snapshot_data || {};
                 
-                // Only render snapshot items if they exist
+                // Safely render snapshot items
                 let snapshotHtml = '';
-                if (latestSnapshot.progress_notes?.length) {
+                if (latestSnapshot.progress_notes && latestSnapshot.progress_notes.length > 0) {
                     snapshotHtml += `<li style="margin-bottom: 8px;"><strong>📈 Progress:</strong> <span style="color: var(--text-muted);">${latestSnapshot.progress_notes.join(' ')}</span></li>`;
                 }
-                if (latestSnapshot.recurring_patterns?.length) {
+                if (latestSnapshot.recurring_patterns && latestSnapshot.recurring_patterns.length > 0) {
                     snapshotHtml += `<li style="margin-bottom: 8px;"><strong>⚠️ Recurring:</strong> <span style="color: var(--text-muted);">${latestSnapshot.recurring_patterns.join(' ')}</span></li>`;
                 }
-                if (latestSnapshot.admin_notes?.length) {
+                if (latestSnapshot.admin_notes && latestSnapshot.admin_notes.length > 0) {
                     snapshotHtml += `<li style="margin-bottom: 8px;"><strong>📁 Admin:</strong> <span style="color: var(--text-muted);">${latestSnapshot.admin_notes.join(' ')}</span></li>`;
                 }
                 
@@ -749,7 +749,7 @@
 
                 // 2. Covered Today (Pills)
                 let coveredHtml = '';
-                if (metrics.covered_today?.length > 0) {
+                if (metrics.covered_today && metrics.covered_today.length > 0) {
                     coveredHtml = `<div style="margin-bottom: 12px;">` + 
                         metrics.covered_today.map(t => `<span class="pill gray" style="margin-right: 6px; margin-bottom: 6px;">${t}</span>`).join('') + 
                     `</div>`;
@@ -757,7 +757,7 @@
 
                 // 3. Scores (Pills)
                 let scoresHtml = '';
-                if (metrics.scores_or_results?.length > 0) {
+                if (metrics.scores_or_results && metrics.scores_or_results.length > 0) {
                     scoresHtml = `<div style="margin-bottom: 16px;">` + 
                         metrics.scores_or_results.map(s => `<span class="pill strength" style="margin-right: 6px; margin-bottom: 6px;">🎯 ${s.label}: <strong>${s.score}</strong> ${s.note ? `(${s.note})` : ''}</span>`).join('') + 
                     `</div>`;
@@ -765,7 +765,7 @@
 
                 // 4. Summary Bullets
                 let bulletsHtml = '';
-                if (metrics.lesson_summary_bullets?.length > 0) {
+                if (metrics.lesson_summary_bullets && metrics.lesson_summary_bullets.length > 0) {
                     bulletsHtml = `<ul style="padding-left: 18px; margin: 0 0 16px 0; color: var(--text-main); font-weight: 500; line-height: 1.6;">
                         ${metrics.lesson_summary_bullets.map(b => `<li style="margin-bottom: 4px;">${b}</li>`).join('')}
                     </ul>`;
@@ -776,7 +776,7 @@
 
                 // 5. Memory Updates (Callout)
                 let memoryHtml = '';
-                if (metrics.student_memory_updates?.length > 0) {
+                if (metrics.student_memory_updates && metrics.student_memory_updates.length > 0) {
                     memoryHtml = `<div class="warning-box" style="margin-bottom: 16px; background: var(--callout-blue-bg); border-color: var(--callout-blue-border); color: var(--callout-blue-text);">
                         <strong>🧠 Note to self:</strong> ${metrics.student_memory_updates.join(' ')}
                     </div>`;
@@ -784,12 +784,12 @@
 
                 // 6. Homework / Next Steps
                 let hwHtml = '';
-                if (metrics.homework?.length > 0 || metrics.next_lesson_notes?.length > 0) {
+                if ((metrics.homework && metrics.homework.length > 0) || (metrics.next_lesson_notes && metrics.next_lesson_notes.length > 0)) {
                     hwHtml = `<div class="lesson-hw-next" style="margin-top: 8px; border-top: 1px solid var(--border); padding-top: 16px;">`;
-                    if (metrics.homework?.length > 0) {
+                    if (metrics.homework && metrics.homework.length > 0) {
                         hwHtml += `<div style="margin-bottom: 6px;"><strong>Homework:</strong> <span style="color: var(--text-muted);">${metrics.homework.join(', ')}</span></div>`;
                     }
-                    if (metrics.next_lesson_notes?.length > 0) {
+                    if (metrics.next_lesson_notes && metrics.next_lesson_notes.length > 0) {
                         hwHtml += `<div><strong>Next Lesson:</strong> <span style="color: var(--text-muted);">${metrics.next_lesson_notes.join(', ')}</span></div>`;
                     }
                     hwHtml += `</div>`;
