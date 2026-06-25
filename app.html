@@ -531,6 +531,7 @@
         };
 
         // Select and view a specific student
+        // Select and view a specific student
         window.selectStudent = function(student) {
             activeStudentId = student.id;
             activeStudent = student; // Store full object for editing
@@ -539,14 +540,17 @@
             document.querySelectorAll('.student-item').forEach(el => el.classList.remove('active'));
             document.getElementById(`nav-student-${student.id}`).classList.add('active');
 
-            document.getElementById('active-student-name').innerText = student.name;
+            // --- RESTORED: Year group in brackets! ---
+            const yearText = student.year_group ? ` (${student.year_group})` : '';
+            document.getElementById('active-student-name').innerText = `${student.name}${yearText}`;
+            
             document.getElementById('active-student-subject').innerText = student.subject || '-';
             document.getElementById('active-student-goal').innerText = student.goal || '-';
             document.getElementById('active-student-contact').innerText = student.parent_contact || '-';
             document.getElementById('active-student-rules').innerText = student.tracking_rules || 'None';
             
             switchView('student');
-            loadTimeline(); // <--- ADD THIS LINE
+            loadTimeline();
         };
 
         // Open Add Modal
@@ -693,7 +697,6 @@
 
             if (!activeStudentId) return;
 
-            // Fetch lessons for this student
             const { data: lessons, error } = await client
                 .from('lessons')
                 .select('*')
@@ -705,66 +708,124 @@
                 return;
             }
 
-            // --- NEW: UPDATE THE MEMORY SNAPSHOT ---
+            // --- MEMORY SNAPSHOT CLEANUP ---
             const snapshotWarning = document.querySelector('.warning-box');
             const snapshotList = document.querySelector('.snapshot-list');
             
             if (lessons.length > 0) {
-                snapshotWarning.classList.add('hidden'); // Hide the warning
+                snapshotWarning.classList.add('hidden');
                 const latestSnapshot = lessons[0].snapshot_data || {};
                 
-                snapshotList.innerHTML = `
-                    <li><strong>Contact:</strong> <span>${activeStudent.parent_contact || '-'}</span></li>
-                    <li><strong>Custom Rules:</strong> <span>${activeStudent.tracking_rules || 'None set'}</span></li>
-                    <li style="margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border);">
-                        <strong>⚠️ Recurring:</strong> <span style="color: var(--text-muted);">${latestSnapshot.recurring_issues || 'None detected yet.'}</span>
-                    </li>
-                    <li style="margin-top: 6px;">
-                        <strong>📈 Progress:</strong> <span style="color: var(--text-muted);">${latestSnapshot.progress_notes || 'Keep adding notes to build patterns.'}</span>
-                    </li>
-                `;
+                // Only render snapshot items if they exist
+                let snapshotHtml = '';
+                if (latestSnapshot.progress_notes?.length) {
+                    snapshotHtml += `<li style="margin-bottom: 8px;"><strong>📈 Progress:</strong> <span style="color: var(--text-muted);">${latestSnapshot.progress_notes.join(' ')}</span></li>`;
+                }
+                if (latestSnapshot.recurring_patterns?.length) {
+                    snapshotHtml += `<li style="margin-bottom: 8px;"><strong>⚠️ Recurring:</strong> <span style="color: var(--text-muted);">${latestSnapshot.recurring_patterns.join(' ')}</span></li>`;
+                }
+                if (latestSnapshot.admin_notes?.length) {
+                    snapshotHtml += `<li style="margin-bottom: 8px;"><strong>📁 Admin:</strong> <span style="color: var(--text-muted);">${latestSnapshot.admin_notes.join(' ')}</span></li>`;
+                }
+                
+                snapshotList.innerHTML = snapshotHtml || `<li style="color: var(--text-muted); font-style: italic;">No specific patterns noted yet.</li>`;
             } else {
                 snapshotWarning.classList.remove('hidden');
-                snapshotList.innerHTML = `
-                    <li><strong>Contact:</strong> <span>${activeStudent.parent_contact || '-'}</span></li>
-                    <li><strong>Custom Rules:</strong> <span>${activeStudent.tracking_rules || 'None set'}</span></li>
-                `;
+                snapshotList.innerHTML = '';
                 container.innerHTML = '<div style="color: var(--text-muted); text-align: center; margin-top: 40px;">No lesson notes saved yet for this student.</div>';
                 return;
             }
 
-            // --- RENDER THE TIMELINE ---
+            // --- RENDER THE NEW CLEAN TIMELINE ---
             container.innerHTML = ''; 
             lessons.forEach(lesson => {
                 const metrics = lesson.metrics || {};
-                
+                const noteId = `raw-note-${lesson.id}`;
+                const parentId = `parent-note-${lesson.id}`;
+
+                // 1. Title & Date
+                const displayTitle = metrics.lesson_title ? metrics.lesson_title.toUpperCase() : 'LESSON LOG';
+                const formattedDate = new Date(lesson.lesson_date).toLocaleDateString('en-GB', { month: 'long', day: 'numeric', year: 'numeric' });
+
+                // 2. Covered Today (Pills)
+                let coveredHtml = '';
+                if (metrics.covered_today?.length > 0) {
+                    coveredHtml = `<div style="margin-bottom: 12px;">` + 
+                        metrics.covered_today.map(t => `<span class="pill gray" style="margin-right: 6px; margin-bottom: 6px;">${t}</span>`).join('') + 
+                    `</div>`;
+                }
+
+                // 3. Scores (Pills)
+                let scoresHtml = '';
+                if (metrics.scores_or_results?.length > 0) {
+                    scoresHtml = `<div style="margin-bottom: 16px;">` + 
+                        metrics.scores_or_results.map(s => `<span class="pill strength" style="margin-right: 6px; margin-bottom: 6px;">🎯 ${s.label}: <strong>${s.score}</strong> ${s.note ? `(${s.note})` : ''}</span>`).join('') + 
+                    `</div>`;
+                }
+
+                // 4. Summary Bullets
+                let bulletsHtml = '';
+                if (metrics.lesson_summary_bullets?.length > 0) {
+                    bulletsHtml = `<ul style="padding-left: 18px; margin: 0 0 16px 0; color: var(--text-main); font-weight: 500; line-height: 1.6;">
+                        ${metrics.lesson_summary_bullets.map(b => `<li style="margin-bottom: 4px;">${b}</li>`).join('')}
+                    </ul>`;
+                } else if (!metrics.lesson_title) {
+                    // Fallback for legacy notes
+                    bulletsHtml = `<div style="color: var(--text-muted); font-style: italic; margin-bottom: 16px;">Legacy note format. Click 'View your note' below.</div>`;
+                }
+
+                // 5. Memory Updates (Callout)
+                let memoryHtml = '';
+                if (metrics.student_memory_updates?.length > 0) {
+                    memoryHtml = `<div class="warning-box" style="margin-bottom: 16px; background: var(--callout-blue-bg); border-color: var(--callout-blue-border); color: var(--callout-blue-text);">
+                        <strong>🧠 Note to self:</strong> ${metrics.student_memory_updates.join(' ')}
+                    </div>`;
+                }
+
+                // 6. Homework / Next Steps
+                let hwHtml = '';
+                if (metrics.homework?.length > 0 || metrics.next_lesson_notes?.length > 0) {
+                    hwHtml = `<div class="lesson-hw-next" style="margin-top: 8px; border-top: 1px solid var(--border); padding-top: 16px;">`;
+                    if (metrics.homework?.length > 0) {
+                        hwHtml += `<div style="margin-bottom: 6px;"><strong>Homework:</strong> <span style="color: var(--text-muted);">${metrics.homework.join(', ')}</span></div>`;
+                    }
+                    if (metrics.next_lesson_notes?.length > 0) {
+                        hwHtml += `<div><strong>Next Lesson:</strong> <span style="color: var(--text-muted);">${metrics.next_lesson_notes.join(', ')}</span></div>`;
+                    }
+                    hwHtml += `</div>`;
+                }
+
+                // Compile Card
                 const cardHtml = `
                     <div class="lesson-card">
-                        <div class="lesson-date-title">${new Date(lesson.lesson_date).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'short' })}</div>
+                        <div class="lesson-date-title" style="font-size: 18px;">${formattedDate}</div>
+                        <div class="lesson-topic-subtitle">${displayTitle}</div>
                         
-                        <div class="lesson-metrics" style="margin-top: 12px;">
-                            <span class="pill gray">🎯 Score: ${metrics.Score || 'N/A'}</span>
-                            <span class="pill strength">💪 Strength: ${metrics.Strength || 'N/A'}</span>
-                            <span class="pill weakness">⚠️ Focus: ${metrics.Weakness || 'N/A'}</span>
+                        ${coveredHtml}
+                        ${scoresHtml}
+                        ${bulletsHtml}
+                        ${memoryHtml}
+                        ${hwHtml}
+
+                        <div class="action-buttons" style="margin-top: 16px;">
+                            <button class="btn-toggle" onclick="toggleSection('${noteId}')">👁️ View your note</button>
+                            <button class="btn-toggle" onclick="toggleSection('${parentId}')">📱 Parent update</button>
                         </div>
 
-                        <div class="lesson-hw-next">
-                            <strong>Homework & Next Steps:</strong>
-                            <div style="color: var(--text-muted);">${lesson.homework_next_steps || 'None set.'}</div>
+                        <div id="${noteId}" class="expandable-section section-note hidden">
+                            <div class="raw-note-header">
+                                <span class="raw-note-label">Raw Note</span>
+                            </div>
+                            <div>${lesson.raw_note}</div>
                         </div>
 
-                        <div class="expandable-section section-parent">
+                        <div id="${parentId}" class="expandable-section section-parent hidden">
                             <div class="parent-header">
-                                💬 Parent Update Draft
+                                WhatsApp Draft
                                 <button class="btn-copy" onclick="navigator.clipboard.writeText('${(lesson.parent_update || '').replace(/'/g, "\\'")}'); this.innerText='Copied!'; setTimeout(() => this.innerText='Copy', 2000);">Copy</button>
                             </div>
                             <div>${lesson.parent_update || 'No update generated.'}</div>
                         </div>
-                        
-                        <details style="margin-top: 16px; font-size: 12px; color: var(--text-muted);">
-                            <summary style="cursor: pointer; font-weight: 600;">View Raw Note</summary>
-                            <div style="padding-top: 8px; font-style: italic;">"${lesson.raw_note}"</div>
-                        </details>
                     </div>
                 `;
                 container.insertAdjacentHTML('beforeend', cardHtml);
