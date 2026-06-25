@@ -88,16 +88,14 @@
         .btn-danger { background: #fff5f5; border: 1px solid #fed7d7; color: #c53030; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 13px; transition: all 0.2s;}
         .btn-danger:hover { background: #fed7d7; }
 
-        /* Workspace Grid (Left/Right columns) */
+        /* Workspace Grid */
         .workspace { display: grid; grid-template-columns: 380px 1fr; gap: 40px; flex: 1; overflow: hidden; }
         .col-left { display: flex; flex-direction: column; gap: 24px; overflow-y: auto; padding-right: 10px; padding-bottom: 40px; }
         .col-right { display: flex; flex-direction: column; overflow: hidden; }
 
-        /* Cards and Structural Elements */
         h2 { margin-top: 0; font-size: 16px; font-weight: 600; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; color: var(--text-main); }
         .card { background: var(--bg-main); border: 1px solid var(--border); border-radius: 8px; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.02); }
 
-        /* Left Column Inputs */
         .hero-title { font-size: 18px; font-weight: 600; margin: 0 0 12px 0; color: var(--text-main); display: flex; align-items: center; gap: 8px; }
         
         textarea, .text-input {
@@ -114,12 +112,10 @@
         button.secondary { background-color: var(--bg-main); color: var(--text-main); border: 1px solid var(--border); padding: 8px 14px; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 13px; }
         button.secondary:hover { background-color: var(--bg-hover); }
 
-        /* Snapshot specific */
         .warning-box { background: var(--callout-yellow-bg); border: 1px solid var(--callout-yellow-border); border-radius: 6px; padding: 12px 16px; font-size: 14px; color: var(--callout-yellow-text); line-height: 1.5; margin-bottom: 16px; }
         .snapshot-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px; font-size: 14px; color: var(--text-main); }
         .snapshot-list strong { font-weight: 600; color: var(--text-muted); margin-right: 4px; }
 
-        /* Minimal To-Do List on Student Dash */
         .todo-item { display: flex; align-items: flex-start; gap: 8px; font-size: 13px; color: var(--text-main); transition: all 0.2s; margin-top: 8px; }
         .todo-item input[type="checkbox"] { margin-top: 3px; cursor: pointer; accent-color: var(--primary); }
         .todo-item.completed { text-decoration: line-through; opacity: 0.5; }
@@ -127,7 +123,6 @@
         .quick-link-btn:hover { color: var(--text-main); }
         .mini-form { background: var(--bg-hover); padding: 12px; border-radius: 6px; margin-top: 12px; border: 1px solid var(--border); }
 
-        /* Timeline Styles */
         .timeline-header { border-bottom: 1px solid var(--border); padding-bottom: 12px; margin-bottom: 16px; font-weight: 600; color: var(--text-main); font-size: 16px; }
         .timeline-container { overflow-y: auto; flex: 1; padding-right: 10px; padding-bottom: 40px; }
 
@@ -143,12 +138,10 @@
 
         .lesson-hw-next { font-size: 14px; color: var(--text-main); display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
 
-        /* Toggle Buttons */
         .action-buttons { display: flex; gap: 12px; border-top: 1px solid var(--border); padding-top: 16px; }
         .btn-toggle { background: var(--tag-gray-bg); border: 1px solid transparent; color: var(--text-main); padding: 6px 12px; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 13px; transition: all 0.2s;}
         .btn-toggle:hover { background: #e3e3e1; border-color: var(--border); }
 
-        /* Expandable Sections */
         .expandable-section { margin-top: 12px; padding: 16px; border-radius: 8px; font-size: 14px; line-height: 1.5; }
         .section-note { background: var(--tag-gray-bg); border-left: 3px solid #d4d4d4; color: var(--text-muted); }
         .section-parent { background: var(--callout-green-bg); border: 1px solid var(--callout-green-border); color: var(--callout-green-text); }
@@ -162,9 +155,7 @@
         
         .edit-btn-small { background: none; border: 1px solid transparent; color: var(--text-muted); cursor: pointer; font-size: 12px; font-weight: 600; padding: 4px 8px; border-radius: 4px; }
         .edit-btn-small:hover { background: #e0e0e0; border-color: var(--border); color: var(--text-main); }
-        .edit-textarea { height: 80px; margin-bottom: 8px; }
-
-        /* Notion Database Table Styles (For Resources & Global To-Dos) */
+        
         .notion-group { margin-bottom: 40px; }
         .notion-group-header { display: flex; align-items: center; gap: 8px; font-size: 15px; font-weight: 600; margin-bottom: 12px; color: var(--text-main); cursor: pointer;}
         
@@ -182,29 +173,16 @@
         .quick-link { color: var(--text-muted); text-decoration: none; font-weight: 500; transition: color 0.2s;}
         .quick-link:hover { color: var(--text-main); text-decoration: underline;}
 
-        /* Settings Page */
         .settings-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
         .settings-label { display: block; font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; margin-top: 16px; }
         .settings-label:first-child { margin-top: 0; }
         .billing-box { background: var(--callout-blue-bg); border: 1px solid var(--callout-blue-border); border-radius: 8px; padding: 20px; margin-bottom: 24px; }
-        .progress-bar-bg { background: rgba(0,0,0,0.1); height: 8px; border-radius: 4px; margin: 12px 0; overflow: hidden; }
-        .progress-bar-fill { background: var(--primary); height: 100%; width: 60%; border-radius: 4px; }
 
-        /* Modal Styles */
-        .modal-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.4); display: flex; justify-content: center; align-items: center; z-index: 100;
-        }
-        .modal-content {
-            background: var(--bg-main); width: 100%; max-width: 450px; border-radius: 12px;
-            padding: 30px; box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-        }
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.4); display: flex; justify-content: center; align-items: center; z-index: 100; }
+        .modal-content { background: var(--bg-main); width: 100%; max-width: 450px; border-radius: 12px; padding: 30px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
         .modal-label { display: block; font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; margin-top: 16px; }
         .modal-label:first-child { margin-top: 0; }
-        .modal-input {
-            width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 6px;
-            font-size: 14px; box-sizing: border-box; background: var(--bg-main); color: var(--text-main); font-family: inherit;
-        }
+        .modal-input { width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px; box-sizing: border-box; background: var(--bg-main); color: var(--text-main); font-family: inherit; }
         .modal-input:focus { outline: none; border-color: var(--primary); }
         .modal-actions { display: flex; justify-content: flex-end; gap: 12px; margin-top: 24px; }
 
@@ -222,7 +200,10 @@
             <input type="email" id="auth-email" class="text-input" style="margin-bottom: 16px;" placeholder="you@example.com">
             
             <label class="modal-label">Password</label>
-            <input type="password" id="auth-password" class="text-input" style="margin-bottom: 20px;" placeholder="••••••••">
+            <div style="position: relative; margin-bottom: 20px;">
+                <input type="password" id="auth-password" class="text-input" style="margin-bottom: 0;" placeholder="••••••••">
+                <button id="monkey-btn" onclick="togglePasswordMonkey()" style="position: absolute; right: 10px; top: 10px; background: none; border: none; cursor: pointer; font-size: 16px; padding: 0;">🙈</button>
+            </div>
             
             <button class="primary" id="auth-submit-btn" onclick="handleAuth()" style="margin-bottom: 16px;">Log In</button>
             
@@ -316,7 +297,6 @@
 
         <div class="workspace">
             <div class="col-left">
-                
                 <div class="card">
                     <h2 class="hero-title">📝 What happened today?</h2>
                     <textarea id="lesson-raw-input" placeholder="Type a quick lesson note — topics covered, scores, homework, parent reminders..."></textarea>
@@ -369,7 +349,6 @@
                 <div class="header-meta">Curated tools, worksheets, and books for private tutors.</div>
             </div>
         </div>
-
         <div class="notion-group">
             <div class="notion-group-header"><span>▾</span> <span>✨ Science & Maths</span></div>
             <div class="notion-table">
@@ -408,11 +387,13 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
-        // 1. SUPABASE CREDENTIALS (Wire your keys right here)
-          const supabaseUrl = 'https://jpjtsvsxdwwwknwggblo.supabase.co/';
+        // 1. SUPABASE CREDENTIALS - Fixed initialization!
+        const supabaseUrl = 'https://jpjtsvsxdwwwknwggblo.supabase.co';
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpwanRzdnN4ZHd3d2tud2dnYmxvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIzNzMyNjAsImV4cCI6MjA5Nzk0OTI2MH0.7zobBlNHYyMPUhW-Ps_SbEbtdh_Nxe9kM6FvvwVS-vE';
-        const supabase = supabase.createClient(supabaseUrl, supabaseKey);
         
+        // Critical Fix: window.supabase instead of just supabase
+        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
         let currentUser = null;
         let activeStudentId = null;
         let isSignUpMode = false;
@@ -427,18 +408,31 @@
             }
         });
 
+        // Hide/Show Password Monkey 🙈🐵
+        window.togglePasswordMonkey = function() {
+            const pwdInput = document.getElementById('auth-password');
+            const monkeyBtn = document.getElementById('monkey-btn');
+            if (pwdInput.type === 'password') {
+                pwdInput.type = 'text';
+                monkeyBtn.innerText = '🐵';
+            } else {
+                pwdInput.type = 'password';
+                monkeyBtn.innerText = '🙈';
+            }
+        };
+
         // Toggle between Login and Sign Up UI modes
-        function toggleAuthMode() {
+        window.toggleAuthMode = function() {
             isSignUpMode = !isSignUpMode;
             document.getElementById('auth-title').innerText = isSignUpMode ? "✨ Create an Account" : "🦀 Welcome to Tutor Log";
             document.getElementById('auth-subtitle').innerText = isSignUpMode ? "Sign up to start your memory system." : "Log in to access your memory system.";
             document.getElementById('auth-submit-btn').innerText = isSignUpMode ? "Sign Up" : "Log In";
             document.getElementById('auth-toggle-msg').innerText = isSignUpMode ? "Already have an account?" : "Don't have an account?";
             document.getElementById('auth-toggle-btn').innerText = isSignUpMode ? "Log In" : "Sign Up";
-        }
+        };
 
-        // Handle the Auth form action
-        async function handleAuth() {
+        // Handle the Auth form action (With Smart Auto-Login)
+        window.handleAuth = async function() {
             const email = document.getElementById('auth-email').value;
             const password = document.getElementById('auth-password').value;
             const btn = document.getElementById('auth-submit-btn');
@@ -447,32 +441,49 @@
             btn.innerText = "Processing...";
 
             if (isSignUpMode) {
+                // SIGN UP LOGIC
                 const { data, error } = await supabase.auth.signUp({ email, password });
-                if (error) { alert(error.message); btn.innerText = "Sign Up"; }
-                else { alert("Sign up successful! You can log in now."); toggleAuthMode(); btn.innerText = "Log In"; }
+                
+                if (error) { 
+                    alert("Sign up error: " + error.message); 
+                    btn.innerText = "Sign Up"; 
+                } else if (data.session) {
+                    // Instantly log in if confirm email is off
+                    handleUserAuthenticated(data.user);
+                } else {
+                    alert("Sign up successful! You can log in now."); 
+                    toggleAuthMode(); 
+                    btn.innerText = "Log In"; 
+                }
             } else {
+                // LOG IN LOGIC
                 const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-                if (error) { alert(error.message); btn.innerText = "Log In"; }
-                else { handleUserAuthenticated(data.user); }
+                
+                if (error) { 
+                    alert("Log in error: " + error.message); 
+                    btn.innerText = "Log In"; 
+                } else { 
+                    handleUserAuthenticated(data.user); 
+                }
             }
-        }
+        };
 
         // User setup on auth success
-        function handleUserAuthenticated(user) {
+        window.handleUserAuthenticated = function(user) {
             currentUser = user;
             document.getElementById('auth-screen').classList.add('hidden');
             loadStudents();
             switchView('todos'); // Default view on landing
-        }
+        };
 
         // Sign Out
-        async function handleSignOut() {
+        window.handleSignOut = async function() {
             await supabase.auth.signOut();
             window.location.reload();
-        }
+        };
 
         // Load students for this authenticated Tutor
-        async function loadStudents() {
+        window.loadStudents = async function() {
             const { data: students, error } = await supabase
                 .from('students')
                 .select('*')
@@ -497,10 +508,10 @@
                 li.onclick = () => selectStudent(student);
                 listContainer.appendChild(li);
             });
-        }
+        };
 
         // Select and view a specific student
-        function selectStudent(student) {
+        window.selectStudent = function(student) {
             activeStudentId = student.id;
             
             // Manage UI states
@@ -514,10 +525,10 @@
             document.getElementById('active-student-rules').innerText = student.tracking_rules || 'None';
 
             switchView('student');
-        }
+        };
 
         // Save new student to Supabase
-        async function saveStudent() {
+        window.saveStudent = async function() {
             const inputs = document.querySelectorAll('.modal-input');
             const name = inputs[0].value;
             const yearGroup = inputs[1].value;
@@ -532,17 +543,20 @@
                 tutor_id: currentUser.id, name, year_group: yearGroup, subject, goal, parent_contact: parentContact, tracking_rules: trackingRules
             }]);
 
-            if (error) alert("Error saving student: " + error.message);
-            else {
+            if (error) {
+                alert("Error saving student: " + error.message);
+            } else {
                 closeModal();
                 inputs.forEach(i => i.value = '');
                 loadStudents();
             }
-        }
+        };
+
+        // Bind the save student button
         document.getElementById('confirm-add-student-btn').onclick = saveStudent;
 
         // View Layout Swapping Engine
-        function switchView(viewName) {
+        window.switchView = function(viewName) {
             const views = ['view-student', 'view-settings', 'view-resources', 'view-todos'];
             views.forEach(v => document.getElementById(v)?.classList.add('hidden'));
 
@@ -552,14 +566,14 @@
             if (viewName === 'todos') document.getElementById('nav-todos').classList.add('active');
             if (viewName === 'resources') document.getElementById('nav-resources').classList.add('active');
             if (viewName === 'settings') document.getElementById('nav-settings').classList.add('active');
-        }
+        };
 
         // Modals Toggle
-        function openModal() { document.getElementById('add-student-modal').classList.remove('hidden'); }
-        function closeModal() { document.getElementById('add-student-modal').classList.add('hidden'); }
+        window.openModal = function() { document.getElementById('add-student-modal').classList.remove('hidden'); };
+        window.closeModal = function() { document.getElementById('add-student-modal').classList.add('hidden'); };
 
         // Delete Student Engine
-        async function deleteActiveStudent() {
+        window.deleteActiveStudent = async function() {
             if (!activeStudentId) return;
             if (confirm("Permanently delete this student and all records?")) {
                 await supabase.from('students').delete().eq('id', activeStudentId);
@@ -567,7 +581,7 @@
                 loadStudents();
                 switchView('todos');
             }
-        }
+        };
     </script>
 </body>
 </html>
