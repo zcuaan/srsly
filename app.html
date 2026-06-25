@@ -703,12 +703,22 @@ window.processLessonNote = async function() {
     saveBtn.style.opacity = "0.7";
 
     try {
-        // Send the messy note to your Edge Function!
+        // 1. Manually grab the active login token
+        const { data: { session } } = await client.auth.getSession();
+
+        if (!session) {
+            throw new Error("You are not logged in. Please refresh and log in again.");
+        }
+
+        // 2. Force the token into the headers of the request
         const { data, error } = await client.functions.invoke('swift-handler', {
             body: { 
                 raw_note: rawNote, 
                 student_id: activeStudentId,
                 tracking_rules: activeStudent.tracking_rules 
+            },
+            headers: {
+                Authorization: `Bearer ${session.access_token}`
             }
         });
 
