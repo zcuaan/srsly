@@ -316,12 +316,14 @@
         </div>
 
         <div class="workspace">
-            <div class="col-left">
-                <div class="card">
-                    <h2 class="hero-title">📝 What happened today?</h2>
-                    <textarea id="lesson-raw-input" placeholder="Type a quick lesson note — topics covered, scores, homework, parent reminders..."></textarea>
-                    <button class="primary" onclick="alert('In the next step, we will wire up the OpenAI AI Brain to generate this!')">Save & create update</button>
-                </div>
+    <div class="col-left">
+        <div class="card">
+            <h2 class="hero-title">📝 What happened today?</h2>
+            <textarea id="lesson-raw-input" placeholder="Type a quick lesson note — topics covered, scores, homework, parent reminders..."></textarea>
+            
+            <button id="save-note-btn" class="primary" onclick="processLessonNote()">Save & create update</button>
+            
+        </div>
 
                 <div class="card">
                     <h2>🧠 Memory Snapshot</h2>
@@ -685,6 +687,49 @@
         window.toggleMiniTodo = function() {
             document.getElementById('mini-todo-form').classList.toggle('hidden');
         };
+
+        // Connects the AI Brain to the Hero Input
+window.processLessonNote = async function() {
+    const rawNoteInput = document.getElementById('lesson-raw-input');
+    const rawNote = rawNoteInput.value.trim();
+    const saveBtn = document.getElementById('save-note-btn');
+
+    if (!rawNote) return alert("Please type a lesson note first!");
+    if (!activeStudentId) return alert("Please select a student from the sidebar.");
+
+    // Enter loading state
+    saveBtn.innerText = "🧠 Processing with AI...";
+    saveBtn.disabled = true;
+    saveBtn.style.opacity = "0.7";
+
+    try {
+        // Send the messy note to your Edge Function!
+        const { data, error } = await client.functions.invoke('process-lesson', {
+            body: { 
+                raw_note: rawNote, 
+                student_id: activeStudentId,
+                tracking_rules: activeStudent.tracking_rules 
+            }
+        });
+
+        if (error) throw error;
+
+        // Clear input and reset UI
+        rawNoteInput.value = '';
+        alert("Success! Lesson structured and saved to timeline.");
+        
+        // (Next step: we will write a function here to load and display the new timeline)
+
+    } catch (err) {
+        alert("Error processing note: " + err.message);
+        console.error(err);
+    } finally {
+        // Reset the button back to normal
+        saveBtn.innerText = "Save & create update";
+        saveBtn.disabled = false;
+        saveBtn.style.opacity = "1";
+    }
+};
     </script>
 </body>
 </html>
