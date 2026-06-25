@@ -4,18 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <!-- Primary SEO -->
     <title>Tutor Log App | Student Memory System for Private Tutors</title>
     <meta name="description" content="Log in to Tutor Log, the student memory system for private tutors. Turn quick lesson notes into student timelines, to-dos, recurring patterns and parent updates.">
     <meta name="robots" content="noindex, nofollow">
 
-    <!-- Favicon: crab emoji -->
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🦀</text></svg>">
 
-    <!-- Browser theme colour -->
     <meta name="theme-color" content="#f7f7f5">
 
-    <!-- Open Graph / Social Sharing -->
     <meta property="og:title" content="Tutor Log | Student Memory System for Private Tutors">
     <meta property="og:description" content="For tutors who remember too much. Tutor Log turns quick post-lesson notes into student histories, to-dos, recurring patterns and parent updates.">
     <meta property="og:type" content="website">
@@ -408,7 +404,6 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
         // 1. SUPABASE CREDENTIALS - Using "client" to avoid naming collisions!
         const supabaseUrl = 'https://jpjtsvsxdwwwknwggblo.supabase.co';
@@ -689,57 +684,66 @@
         };
 
         // Connects the AI Brain to the Hero Input
-window.processLessonNote = async function() {
-    const rawNoteInput = document.getElementById('lesson-raw-input');
-    const rawNote = rawNoteInput.value.trim();
-    const saveBtn = document.getElementById('save-note-btn');
+        window.processLessonNote = async function() {
+            const rawNoteInput = document.getElementById('lesson-raw-input');
+            const rawNote = rawNoteInput.value.trim();
+            const saveBtn = document.getElementById('save-note-btn');
 
-    if (!rawNote) return alert("Please type a lesson note first!");
-    if (!activeStudentId) return alert("Please select a student from the sidebar.");
+            if (!rawNote) return alert("Please type a lesson note first!");
+            if (!activeStudentId) return alert("Please select a student from the sidebar.");
 
-    // Enter loading state
-    saveBtn.innerText = "🧠 Processing with AI...";
-    saveBtn.disabled = true;
-    saveBtn.style.opacity = "0.7";
+            // Enter loading state
+            saveBtn.innerText = "🧠 Processing with AI...";
+            saveBtn.disabled = true;
+            saveBtn.style.opacity = "0.7";
 
-    try {
-        // 1. Manually grab the active login token
-        const { data: { session } } = await client.auth.getSession();
+            try {
+                // 1. Manually grab the active login token
+                const { data: { session } } = await client.auth.getSession();
 
-        if (!session) {
-            throw new Error("You are not logged in. Please refresh and log in again.");
-        }
+                if (!session) {
+                    throw new Error("You are not logged in. Please refresh and log in again.");
+                }
 
-        // 2. Force the token into the headers of the request
-        const { data, error } = await client.functions.invoke('swift-handler', {
-            body: { 
-                raw_note: rawNote, 
-                student_id: activeStudentId,
-                tracking_rules: activeStudent.tracking_rules 
-            },
-            headers: {
-                Authorization: `Bearer ${session.access_token}`
+                // 2. Use a raw HTTP request to completely bypass Supabase SDK quirks
+                const response = await fetch(`${supabaseUrl}/functions/v1/swift-handler`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${session.access_token}`,
+                        'apikey': supabaseKey // Forces the public anon key through
+                    },
+                    body: JSON.stringify({ 
+                        raw_note: rawNote, 
+                        student_id: activeStudentId,
+                        tracking_rules: activeStudent.tracking_rules 
+                    })
+                });
+
+                // 3. Catch the EXACT error message from the server if it fails
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`Server rejected it (Status ${response.status}): ${errorText}`);
+                }
+
+                const data = await response.json();
+
+                // Clear input and reset UI
+                rawNoteInput.value = '';
+                alert("Success! Lesson structured and saved to timeline.");
+                
+                // (Next step: we will write a function here to load and display the new timeline)
+
+            } catch (err) {
+                alert("Error: " + err.message);
+                console.error("RAW ERROR DETAILS:", err);
+            } finally {
+                // Reset the button back to normal
+                saveBtn.innerText = "Save & create update";
+                saveBtn.disabled = false;
+                saveBtn.style.opacity = "1";
             }
-        });
-
-        if (error) throw error;
-
-        // Clear input and reset UI
-        rawNoteInput.value = '';
-        alert("Success! Lesson structured and saved to timeline.");
-        
-        // (Next step: we will write a function here to load and display the new timeline)
-
-    } catch (err) {
-        alert("Error processing note: " + err.message);
-        console.error(err);
-    } finally {
-        // Reset the button back to normal
-        saveBtn.innerText = "Save & create update";
-        saveBtn.disabled = false;
-        saveBtn.style.opacity = "1";
-    }
-};
+        };
     </script>
 </body>
 </html>
