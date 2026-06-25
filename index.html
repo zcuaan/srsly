@@ -48,6 +48,16 @@
             overflow: hidden; font-size: 14px; line-height: 1.5;
         }
 
+        /* Auth Screen Styles */
+        .auth-container {
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            width: 100vw; height: 100vh; background: var(--bg-sidebar); position: fixed; top: 0; left: 0; z-index: 1000;
+        }
+        .auth-card {
+            background: var(--bg-main); padding: 40px; border-radius: 12px; border: 1px solid var(--border);
+            width: 100%; max-width: 360px; box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+
         /* Sidebar Styles */
         .sidebar {
             width: 250px; background-color: var(--bg-sidebar); border-right: 1px solid var(--border);
@@ -203,6 +213,26 @@
 </head>
 <body>
 
+    <div id="auth-screen" class="auth-container">
+        <div class="auth-card">
+            <h2 id="auth-title" style="font-size: 22px; margin-bottom: 6px; letter-spacing: -0.02em;">🦀 Welcome to Tutor Log</h2>
+            <p id="auth-subtitle" style="color: var(--text-muted); margin: 0 0 24px 0; font-size: 13px;">Log in to access your memory system.</p>
+            
+            <label class="modal-label">Email Address</label>
+            <input type="email" id="auth-email" class="text-input" style="margin-bottom: 16px;" placeholder="you@example.com">
+            
+            <label class="modal-label">Password</label>
+            <input type="password" id="auth-password" class="text-input" style="margin-bottom: 20px;" placeholder="••••••••">
+            
+            <button class="primary" id="auth-submit-btn" onclick="handleAuth()" style="margin-bottom: 16px;">Log In</button>
+            
+            <div style="text-align: center; font-size: 13px;">
+                <span id="auth-toggle-msg" style="color: var(--text-muted);">Don't have an account?</span>
+                <button id="auth-toggle-btn" style="background: none; border: none; color: var(--primary); cursor: pointer; font-weight: 600; padding: 0;" onclick="toggleAuthMode()">Sign Up</button>
+            </div>
+        </div>
+    </div>
+
     <div id="add-student-modal" class="modal-overlay hidden">
         <div class="modal-content">
             <h2 style="margin-top: 0; font-size: 20px;">➕ Add New Student</h2>
@@ -234,8 +264,8 @@
             </div>
 
             <div class="modal-actions">
-                <button class="btn-cancel" style="background: transparent; border: none; cursor: pointer; font-weight: 600;" onclick="closeModal()">Cancel</button>
-                <button class="primary" style="width: auto;" onclick="closeModal()">Save Student</button>
+                <button type="button" style="background: transparent; border: none; cursor: pointer; font-weight: 600;" onclick="closeModal()">Cancel</button>
+                <button type="button" class="primary" style="width: auto;" id="confirm-add-student-btn">Save Student</button>
             </div>
         </div>
     </div>
@@ -251,11 +281,10 @@
             </ul>
 
             <div class="section-title">My Students</div>
+            <ul class="student-list" id="sidebar-student-list">
+                </ul>
             <ul class="student-list">
-                <li class="student-item active" id="nav-mia" onclick="switchView('student')">Mia (Year 8)</li>
-                <li class="student-item">Alex (Year 11)</li>
-                <li class="student-item">Sam (Year 6)</li>
-                <li class="student-item" style="color: var(--text-muted); margin-top: 8px;" onclick="openModal()">+ Add Student</li>
+                <li class="student-item" style="color: var(--text-muted); margin-top: 4px;" onclick="openModal()">+ Add Student</li>
             </ul>
         </div>
         
@@ -268,21 +297,21 @@
             <div class="section-title">Manage</div>
             <ul class="student-list">
                 <li class="student-item" id="nav-settings" onclick="switchView('settings')">⚙️ Settings</li>
-                <li class="student-item" style="color: var(--text-muted);" id="bin-link">🗑️ Bin (0)</li>
+                <li class="student-item" style="color: var(--text-muted);" onclick="handleSignOut()">🚪 Sign Out</li>
             </ul>
         </div>
     </div>
 
-    <div class="main-content" id="view-student">
+    <div class="main-content hidden" id="view-student">
         <div class="header">
             <div>
-                <h1>Mia (Year 8)</h1>
+                <h1 id="active-student-name">Select a Student</h1>
                 <div class="header-meta">
-                    <span><strong>Subject:</strong> Maths</span>
-                    <span><strong>Goal:</strong> GCSE Foundation</span>
+                    <span><strong>Subject:</strong> <span id="active-student-subject">-</span></span>
+                    <span><strong>Goal:</strong> <span id="active-student-goal">-</span></span>
                 </div>
             </div>
-            <button class="btn-danger" onclick="deleteStudent()">🗑️ Delete Student</button>
+            <button class="btn-danger" onclick="deleteActiveStudent()">🗑️ Delete Student</button>
         </div>
 
         <div class="workspace">
@@ -290,152 +319,26 @@
                 
                 <div class="card">
                     <h2 class="hero-title">📝 What happened today?</h2>
-                    <textarea placeholder="Type a quick lesson note — topics covered, scores, homework, parent reminders, cancellations, or anything Tutor Log should remember."></textarea>
-                    <button class="primary">Save & create update</button>
+                    <textarea id="lesson-raw-input" placeholder="Type a quick lesson note — topics covered, scores, homework, parent reminders..."></textarea>
+                    <button class="primary" onclick="alert('In the next step, we will wire up the OpenAI AI Brain to generate this!')">Save & create update</button>
                 </div>
 
                 <div class="card">
                     <h2>🧠 Memory Snapshot</h2>
                     <div class="warning-box">
-                        <strong>⚠️ Recurring Pattern:</strong> Over the last 5 lessons, Mia has struggled with <em>negative signs</em> 3 times.
+                        <strong>⚠️ Notice:</strong> Add your first lesson note to unlock automatic metric and problem tracking patterns!
                     </div>
                     <ul class="snapshot-list">
-                        <li><strong>Current resource:</strong> Edexcel Foundation Textbook</li>
-                        <li><strong>Average score:</strong> 74% <span style="color: var(--tag-green-text); font-weight: 600;">(Trending Up)</span></li>
-                        <li style="margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--border);">
-                            <strong>Package Balance:</strong> 2 Lessons Remaining<br>
-                            <span style="font-size: 13px; color: var(--text-muted); font-weight: 400;">Last note: Cancelled (Chargeable) on June 25th</span>
-                        </li>
+                        <li><strong>Contact:</strong> <span id="active-student-contact">-</span></li>
+                        <li><strong>Custom Rules:</strong> <span id="active-student-rules">None set</span></li>
                     </ul>
                 </div>
-
-                <div style="padding: 0 4px;">
-                    <h2 style="font-size: 14px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;">☑️ Things to do</h2>
-                    
-                    <button class="quick-link-btn" onclick="toggleMiniTodo()">
-                        <span style="font-size: 16px;">+</span> Add to-do
-                    </button>
-                    
-                    <div id="mini-todo-form" class="mini-form hidden">
-                        <input type="text" class="text-input" placeholder="To-do (e.g. Send worksheet)" style="margin-bottom: 8px; padding: 8px;">
-                        <div style="display: flex; gap: 8px; align-items: center;">
-                            <span style="font-size: 12px; color: var(--text-muted);">Due:</span>
-                            <input type="text" class="text-input" placeholder="Optional" style="width: 100px; padding: 6px 8px; font-size: 12px;">
-                            <div style="flex: 1;"></div>
-                            <button class="secondary" style="padding: 6px 12px; border: none; background: transparent;" onclick="toggleMiniTodo()">Cancel</button>
-                            <button class="primary" style="padding: 6px 12px; width: auto;" onclick="toggleMiniTodo(); alert('Saved! You can view this on the Global To-do list.')">Save</button>
-                        </div>
-                    </div>
-
-                    <label class="todo-item">
-                        <input type="checkbox" onchange="toggleTodo(this)"> 
-                        Send Mia the factorising worksheet
-                        <span class="pill weakness" style="padding: 2px 6px; font-size: 11px;">Due: Today</span>
-                    </label>
-                </div>
-
             </div>
 
             <div class="col-right">
                 <div class="timeline-header">Student timeline</div>
-                <div class="timeline-container">
-                    
-                    <div class="lesson-card">
-                        <div class="lesson-date-title">June 25, 2026</div>
-                        <div class="lesson-topic-subtitle">Topic: Factorising Basic Expressions</div>
-
-                        <div class="lesson-metrics">
-                            <span class="pill gray">Score 8/10</span>
-                            <span class="pill strength">Method improving</span>
-                            <span class="pill weakness">Negative signs</span>
-                        </div>
-
-                        <div class="lesson-hw-next">
-                            <div><strong>Homework:</strong> Exercise 4B</div>
-                            <div><strong>Next:</strong> Consolidate negatives before moving on</div>
-                        </div>
-
-                        <div class="action-buttons">
-                            <button class="btn-toggle" onclick="toggleSection('note-5')">👁️ View your note</button>
-                            <button class="btn-toggle" onclick="toggleSection('parent-5')">📱 Parent update</button>
-                        </div>
-
-                        <div id="note-5" class="expandable-section section-note hidden">
-                            <div class="view-state">
-                                <div class="raw-note-header">
-                                    <span class="raw-note-label">Original Notes (Compiled)</span>
-                                    <button class="edit-btn-small" onclick="toggleEditNote('note-5', true)">✏️ Edit</button>
-                                </div>
-                                <div class="raw-note-text">
-                                    <div style="margin-bottom: 4px; font-style: normal;"><strong>(17:20)</strong> <span style="font-style: italic;">Mia got 8/10 on the starter quiz.</span></div>
-                                    <div style="margin-bottom: 4px; font-style: normal;"><strong>(17:30)</strong> <span style="font-style: italic;">Struggling with negative signs on question 4.</span></div>
-                                    <div style="font-style: normal;"><strong>(18:00)</strong> <span style="font-style: italic;">Homework is Ex 4B. Tell mum she's improving but needs to slow down.</span></div>
-                                </div>
-                            </div>
-                            <div class="edit-state hidden">
-                                <div class="raw-note-header">
-                                    <span class="raw-note-label">Edit Original Notes</span>
-                                </div>
-                                <textarea class="text-input edit-textarea" style="background: white;">(17:20) Mia got 8/10 on the starter quiz.&#10;(17:30) Struggling with negative signs on question 4.&#10;(18:00) Homework is Ex 4B. Tell mum she's improving but needs to slow down.</textarea>
-                                <div style="display: flex; gap: 8px; justify-content: flex-end;">
-                                    <button class="btn-cancel" style="background: transparent; border: none; cursor: pointer; font-weight: 600;" onclick="toggleEditNote('note-5', false)">Cancel</button>
-                                    <button class="primary" style="width: auto; padding: 6px 12px;" onclick="toggleEditNote('note-5', false)">Save & Reprocess</button>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div id="parent-5" class="expandable-section section-parent hidden">
-                            <div class="parent-header">
-                                <span>Draft Update</span>
-                                <div style="display: flex; gap: 8px;">
-                                    <button class="btn-copy" onclick="alert('Copied to clipboard!')">📋 Copy Text</button>
-                                    <button class="btn-copy" id="mark-sent-btn-5" onclick="markSent('mark-sent-btn-5')">✔️ Mark sent</button>
-                                </div>
-                            </div>
-                            "Hi! Mia worked well today. She got 8/10 on her starter quiz and her method is improving, but negative signs are still causing some errors when she rushes. For homework, please have her do Ex 4B. Next lesson, we’ll spend a few minutes consolidating negatives."
-                        </div>
-                    </div>
-
-                    <div class="lesson-card">
-                        <div class="lesson-date-title">June 17, 2026</div>
-                        <div class="lesson-topic-subtitle">Topic: Expanding Double Brackets</div>
-
-                        <div class="lesson-metrics">
-                            <span class="pill gray">Score 6/10</span>
-                            <span class="pill strength">Grid method</span>
-                            <span class="pill weakness">Negative signs</span>
-                        </div>
-
-                        <div class="lesson-hw-next">
-                            <div><strong>Homework:</strong> Ex 4C, Q1-10</div>
-                            <div><strong>Next:</strong> Practice negative multiplication</div>
-                        </div>
-
-                        <div class="action-buttons">
-                            <button class="btn-toggle" onclick="toggleSection('note-4')">👁️ View your note</button>
-                            <button class="btn-toggle" onclick="toggleSection('parent-4')">📱 Parent update</button>
-                        </div>
-
-                        <div id="note-4" class="expandable-section section-note hidden">
-                            <div class="view-state">
-                                <div class="raw-note-header">
-                                    <span class="raw-note-label">Original Note</span>
-                                </div>
-                                <div class="raw-note-text" style="font-style: italic;">
-                                    "Got 6/10. Used the grid method which she liked, but still messing up the negative signs when multiplying. Hw is Ex 4C first ten questions."
-                                </div>
-                            </div>
-                        </div>
-
-                        <div id="parent-4" class="expandable-section section-parent hidden">
-                            <div class="parent-header">
-                                <span>Draft Update</span>
-                                <div><span style="font-size: 12px; color: #166534;">✅ Sent on June 17</span></div>
-                            </div>
-                            "Hi! Mia tried the grid method today and it helped a lot, but she is still getting caught out by negative signs. Homework is Ex 4C."
-                        </div>
-                    </div>
-
+                <div class="timeline-container" id="timeline-container">
+                    <div style="color: var(--text-muted); text-align: center; margin-top: 40px;">No lesson notes saved yet for this student.</div>
                 </div>
             </div>
         </div>
@@ -448,7 +351,6 @@
                 <div class="header-meta">Manage tasks and reminders across all your students.</div>
             </div>
         </div>
-
         <div class="notion-table">
             <div class="notion-row header todo-layout">
                 <div class="notion-cell"><span>☑️</span> Task</div>
@@ -456,36 +358,7 @@
                 <div class="notion-cell"><span>📅</span> Added</div>
                 <div class="notion-cell"><span>⏰</span> Due</div>
             </div>
-            
-            <div class="notion-row todo-layout">
-                <div class="notion-cell" style="font-weight: 500;">
-                    <input type="checkbox" style="margin-right: 8px; accent-color: var(--primary); cursor: pointer;">
-                    Send Mia the factorising worksheet
-                </div>
-                <div class="notion-cell"><span class="pill gray">Mia</span></div>
-                <div class="notion-cell notes">June 25</div>
-                <div class="notion-cell"><span class="pill weakness">Today</span></div>
-            </div>
-
-            <div class="notion-row todo-layout">
-                <div class="notion-cell" style="font-weight: 500;">
-                    <input type="checkbox" style="margin-right: 8px; accent-color: var(--primary); cursor: pointer;">
-                    Mark mock paper 1 before next session
-                </div>
-                <div class="notion-cell"><span class="pill gray">Alex</span></div>
-                <div class="notion-cell notes">June 24</div>
-                <div class="notion-cell"><span class="pill gray">June 28</span></div>
-            </div>
-
-            <div class="notion-row todo-layout">
-                <div class="notion-cell" style="font-weight: 500;">
-                    <input type="checkbox" style="margin-right: 8px; accent-color: var(--primary); cursor: pointer;">
-                    Invoice mum for May lessons
-                </div>
-                <div class="notion-cell"><span class="pill gray">Sam</span></div>
-                <div class="notion-cell notes">June 20</div>
-                <div class="notion-cell"><span class="pill weakness">Overdue</span></div>
-            </div>
+            <div style="padding: 20px; text-align: center; color: var(--text-muted);">To-do auto-saving to your database is ready to be linked!</div>
         </div>
     </div>
 
@@ -498,9 +371,7 @@
         </div>
 
         <div class="notion-group">
-            <div class="notion-group-header">
-                <span>▾</span> <span>✨ Science & Maths</span> <span class="notion-group-count">3</span>
-            </div>
+            <div class="notion-group-header"><span>▾</span> <span>✨ Science & Maths</span></div>
             <div class="notion-table">
                 <div class="notion-row header">
                     <div class="notion-cell"><span>Aa</span> Resource name</div>
@@ -512,51 +383,7 @@
                     <div class="notion-cell"><span>📄</span> Physics & Maths Tutor</div>
                     <div class="notion-cell"><span class="pill gray">Free</span></div>
                     <div class="notion-cell notes">GCSE/A-Level past papers and topic questions</div>
-                    <div class="notion-cell"><a href="#" class="quick-link">Open</a></div>
-                </div>
-                <div class="notion-row">
-                    <div class="notion-cell"><span>📄</span> SaveMyExams</div>
-                    <div class="notion-cell"><span class="pill strength">Freemium</span></div>
-                    <div class="notion-cell notes">Structured revision notes and topic questions</div>
-                    <div class="notion-cell"><a href="#" class="quick-link">Open</a></div>
-                </div>
-                <div class="notion-row">
-                    <div class="notion-cell"><span>📄</span> CorbettMaths</div>
-                    <div class="notion-cell"><span class="pill gray">Free</span></div>
-                    <div class="notion-cell notes">Videos, worksheets, and daily "5-a-day" practice</div>
-                    <div class="notion-cell"><a href="#" class="quick-link">Open</a></div>
-                </div>
-            </div>
-        </div>
-
-        <div class="notion-group">
-            <div class="notion-group-header">
-                <span>▾</span> <span>📖 Primary & 11+</span> <span class="notion-group-count">3</span>
-            </div>
-            <div class="notion-table">
-                <div class="notion-row header">
-                    <div class="notion-cell"><span>Aa</span> Resource name</div>
-                    <div class="notion-cell"><span>🔑</span> Access</div>
-                    <div class="notion-cell"><span>🎯</span> Best for</div>
-                    <div class="notion-cell"><span>↗</span> Link</div>
-                </div>
-                <div class="notion-row">
-                    <div class="notion-cell"><span>📚</span> CGP 10-Minute Tests</div>
-                    <div class="notion-cell"><span class="pill gray">Book</span></div>
-                    <div class="notion-cell notes">Quick 11+ homework or lesson starters</div>
-                    <div class="notion-cell"><a href="#" class="quick-link">Open</a></div>
-                </div>
-                <div class="notion-row">
-                    <div class="notion-cell"><span>📚</span> Bond 11+ Assessment Papers</div>
-                    <div class="notion-cell"><span class="pill gray">Book</span></div>
-                    <div class="notion-cell notes">Workbooks for 11+ Maths, English, and Reasoning prep</div>
-                    <div class="notion-cell"><a href="#" class="quick-link">Open</a></div>
-                </div>
-                <div class="notion-row">
-                    <div class="notion-cell"><span>🎨</span> Twinkl</div>
-                    <div class="notion-cell"><span class="pill strength">Subscription</span></div>
-                    <div class="notion-cell notes">Primary worksheets and visual activities</div>
-                    <div class="notion-cell"><a href="#" class="quick-link">Open</a></div>
+                    <div class="notion-cell"><a href="https://www.physicsandmathstutor.com/" target="_blank" class="quick-link">Open</a></div>
                 </div>
             </div>
         </div>
@@ -569,123 +396,128 @@
                 <div class="header-meta">Manage your account, billing, and preferences.</div>
             </div>
         </div>
-
         <div class="settings-grid">
             <div>
                 <div class="billing-box">
                     <h2 style="color: var(--callout-blue-text); margin-bottom: 8px;">Current Plan: Free Tier</h2>
-                    <div style="font-size: 14px; color: var(--callout-blue-text);">
-                        You are using <strong>3 of 5</strong> free students.
-                    </div>
-                    <div class="progress-bar-bg">
-                        <div class="progress-bar-fill"></div>
-                    </div>
-                    <div style="font-size: 13px; color: var(--callout-blue-text); margin-bottom: 16px;">
-                        Need more space? Add unlimited students for just <strong>£1.50/month</strong> per active student.
-                    </div>
-                    <button class="primary" style="background: var(--primary); border: none;">Upgrade to Pro</button>
-                </div>
-
-                <div class="card" style="margin-bottom: 24px;">
-                    <h2>Account Profile</h2>
-                    <label class="settings-label">Email Address</label>
-                    <input type="email" class="text-input" value="tutor@example.com" style="margin-bottom: 16px;">
-                    <label class="settings-label">Password</label>
-                    <button class="secondary" style="width: 100%;">Send Password Reset Email</button>
-                    <div style="margin-top: 20px; text-align: right;">
-                        <button class="primary" style="width: auto;">Update Profile</button>
-                    </div>
-                </div>
-            </div>
-
-            <div>
-                <div class="card" style="margin-bottom: 24px;">
-                    <h2>Global AI Preferences</h2>
-                    <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 16px;">
-                        Add a master rule that the AI will follow for <strong>all</strong> your students.
-                    </p>
-                    <label class="settings-label">Default Tracking Rule</label>
-                    <textarea class="text-input" placeholder="e.g., Always track homework scores out of 10..." style="height: 80px; margin-bottom: 16px;"></textarea>
-                    
-                    <label class="settings-label">Parent Update Tone</label>
-                    <select class="text-input" style="margin-bottom: 16px;">
-                        <option>Friendly & Encouraging</option>
-                        <option>Formal & Professional</option>
-                        <option>Direct & Concise</option>
-                    </select>
-
-                    <div style="text-align: right;">
-                        <button class="primary" style="width: auto;">Save Preferences</button>
-                    </div>
-                </div>
-
-                <div class="card" style="border-color: #fed7d7;">
-                    <h2 style="color: #c53030;">Data & Privacy</h2>
-                    <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 16px;">Export your notes or permanently delete your account.</p>
-                    <div style="display: flex; flex-direction: column; gap: 12px;">
-                        <button class="secondary">⬇️ Export All Data (.CSV)</button>
-                        <button class="btn-danger" style="background: #fff5f5; color: #c53030; text-align: center;">🗑️ Delete Account</button>
-                    </div>
+                    <div style="font-size: 14px; color: var(--callout-blue-text);">You are using a shared beta version.</div>
                 </div>
             </div>
         </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
     <script>
-        // 1. INITIALIZE SUPABASE
-        // ⚠️ Replace these with your actual URL and Anon Key from Supabase!
-        const supabaseUrl = 'https://jpjtsvsxdwwwknwggblo.supabase.co/';
+        // 1. SUPABASE CREDENTIALS (Wire your keys right here)
+          const supabaseUrl = 'https://jpjtsvsxdwwwknwggblo.supabase.co/';
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpwanRzdnN4ZHd3d2tud2dnYmxvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIzNzMyNjAsImV4cCI6MjA5Nzk0OTI2MH0.7zobBlNHYyMPUhW-Ps_SbEbtdh_Nxe9kM6FvvwVS-vE';
         const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+        
+        let currentUser = null;
+        let activeStudentId = null;
+        let isSignUpMode = false;
 
-        // Since we aren't building login yet, we will use a fake "Tutor ID" 
-        // to pretend we are logged in as User #1.
-        const MY_TUTOR_ID = '11111111-1111-1111-1111-111111111111';
+        // Check login status on page load
+        window.addEventListener('DOMContentLoaded', async () => {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (session) {
+                handleUserAuthenticated(session.user);
+            } else {
+                document.getElementById('auth-screen').classList.remove('hidden');
+            }
+        });
 
-        // View Switcher
-        function switchView(viewName) {
-            const views = ['view-student', 'view-settings', 'view-resources', 'view-todos'];
-            const navs = ['nav-mia', 'nav-settings', 'nav-resources', 'nav-todos'];
+        // Toggle between Login and Sign Up UI modes
+        function toggleAuthMode() {
+            isSignUpMode = !isSignUpMode;
+            document.getElementById('auth-title').innerText = isSignUpMode ? "✨ Create an Account" : "🦀 Welcome to Tutor Log";
+            document.getElementById('auth-subtitle').innerText = isSignUpMode ? "Sign up to start your memory system." : "Log in to access your memory system.";
+            document.getElementById('auth-submit-btn').innerText = isSignUpMode ? "Sign Up" : "Log In";
+            document.getElementById('auth-toggle-msg').innerText = isSignUpMode ? "Already have an account?" : "Don't have an account?";
+            document.getElementById('auth-toggle-btn').innerText = isSignUpMode ? "Log In" : "Sign Up";
+        }
 
-            views.forEach(v => document.getElementById(v)?.classList.add('hidden'));
-            navs.forEach(n => document.getElementById(n)?.classList.remove('active'));
+        // Handle the Auth form action
+        async function handleAuth() {
+            const email = document.getElementById('auth-email').value;
+            const password = document.getElementById('auth-password').value;
+            const btn = document.getElementById('auth-submit-btn');
 
-            document.getElementById('view-' + viewName)?.classList.remove('hidden');
+            if (!email || !password) return alert("Please fill out all fields.");
+            btn.innerText = "Processing...";
+
+            if (isSignUpMode) {
+                const { data, error } = await supabase.auth.signUp({ email, password });
+                if (error) { alert(error.message); btn.innerText = "Sign Up"; }
+                else { alert("Sign up successful! You can log in now."); toggleAuthMode(); btn.innerText = "Log In"; }
+            } else {
+                const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+                if (error) { alert(error.message); btn.innerText = "Log In"; }
+                else { handleUserAuthenticated(data.user); }
+            }
+        }
+
+        // User setup on auth success
+        function handleUserAuthenticated(user) {
+            currentUser = user;
+            document.getElementById('auth-screen').classList.add('hidden');
+            loadStudents();
+            switchView('todos'); // Default view on landing
+        }
+
+        // Sign Out
+        async function handleSignOut() {
+            await supabase.auth.signOut();
+            window.location.reload();
+        }
+
+        // Load students for this authenticated Tutor
+        async function loadStudents() {
+            const { data: students, error } = await supabase
+                .from('students')
+                .select('*')
+                .eq('tutor_id', currentUser.id)
+                .order('name', { ascending: true });
+
+            if (error) return console.error(error);
+
+            const listContainer = document.getElementById('sidebar-student-list');
+            listContainer.innerHTML = '';
+
+            if (students.length === 0) {
+                listContainer.innerHTML = `<li style="padding: 8px 12px; color: var(--text-muted); font-style: italic;">No students yet</li>`;
+                return;
+            }
+
+            students.forEach(student => {
+                const li = document.createElement('li');
+                li.className = 'student-item';
+                li.id = `nav-student-${student.id}`;
+                li.innerText = `${student.name} (${student.year_group || 'N/A'})`;
+                li.onclick = () => selectStudent(student);
+                listContainer.appendChild(li);
+            });
+        }
+
+        // Select and view a specific student
+        function selectStudent(student) {
+            activeStudentId = student.id;
             
-            if (viewName === 'student') document.getElementById('nav-mia')?.classList.add('active');
-            else document.getElementById('nav-' + viewName)?.classList.add('active');
+            // Manage UI states
+            document.querySelectorAll('.student-item').forEach(el => el.classList.remove('active'));
+            document.getElementById(`nav-student-${student.id}`).classList.add('active');
+
+            document.getElementById('active-student-name').innerText = student.name;
+            document.getElementById('active-student-subject').innerText = student.subject || '-';
+            document.getElementById('active-student-goal').innerText = student.goal || '-';
+            document.getElementById('active-student-contact').innerText = student.parent_contact || '-';
+            document.getElementById('active-student-rules').innerText = student.tracking_rules || 'None';
+
+            switchView('student');
         }
 
-        // Mini To-Do Form Toggle
-        function toggleMiniTodo() {
-            const form = document.getElementById('mini-todo-form');
-            form.classList.toggle('hidden');
-        }
-
-        // Action Items Checkbox Logic
-        function toggleTodo(checkbox) {
-            if (checkbox.checked) checkbox.parentElement.classList.add('completed');
-            else checkbox.parentElement.classList.remove('completed');
-        }
-
-        // Toggle Timeline Sections
-        function toggleSection(sectionId) {
-            document.getElementById(sectionId).classList.toggle('hidden');
-        }
-
-        // Modal Logic (Add Student)
-        function openModal() {
-            document.getElementById('add-student-modal').classList.remove('hidden');
-        }
-        function closeModal() {
-            document.getElementById('add-student-modal').classList.add('hidden');
-        }
-
-        // 2. SAVE STUDENT TO SUPABASE
+        // Save new student to Supabase
         async function saveStudent() {
-            // Grab the values from the modal inputs
             const inputs = document.querySelectorAll('.modal-input');
             const name = inputs[0].value;
             const yearGroup = inputs[1].value;
@@ -694,85 +526,46 @@
             const parentContact = inputs[4].value;
             const trackingRules = inputs[5].value;
 
-            if (!name) {
-                alert("Please enter a student name!");
-                return;
-            }
+            if (!name) return alert("Please enter a name!");
 
-            // Change button text to show it's working
-            const saveBtn = document.querySelector('#add-student-modal .primary');
-            const originalText = saveBtn.innerText;
-            saveBtn.innerText = "Saving...";
+            const { error } = await supabase.from('students').insert([{
+                tutor_id: currentUser.id, name, year_group: yearGroup, subject, goal, parent_contact: parentContact, tracking_rules: trackingRules
+            }]);
 
-            // Send data to Supabase
-            const { data, error } = await supabase
-                .from('students')
-                .insert([
-                    {
-                        tutor_id: MY_TUTOR_ID,
-                        name: name,
-                        year_group: yearGroup,
-                        subject: subject,
-                        goal: goal,
-                        parent_contact: parentContact,
-                        tracking_rules: trackingRules
-                    }
-                ]);
-
-            if (error) {
-                console.error("Error saving student:", error);
-                alert("Something went wrong saving the student.");
-                saveBtn.innerText = originalText;
-            } else {
-                // Success! Close modal and clear inputs
+            if (error) alert("Error saving student: " + error.message);
+            else {
                 closeModal();
-                inputs.forEach(input => input.value = '');
-                saveBtn.innerText = originalText;
-                alert("Student saved successfully to the database!");
-                
-                // (Later we will write a function here to refresh the sidebar list)
+                inputs.forEach(i => i.value = '');
+                loadStudents();
             }
         }
+        document.getElementById('confirm-add-student-btn').onclick = saveStudent;
 
-        // Attach saveStudent to the modal's save button
-        document.querySelector('#add-student-modal .primary').onclick = saveStudent;
+        // View Layout Swapping Engine
+        function switchView(viewName) {
+            const views = ['view-student', 'view-settings', 'view-resources', 'view-todos'];
+            views.forEach(v => document.getElementById(v)?.classList.add('hidden'));
 
-        // Edit Raw Note Logic
-        function toggleEditNote(noteId, enteringEdit) {
-            const container = document.getElementById(noteId);
-            if (enteringEdit) {
-                container.querySelector('.view-state').classList.add('hidden');
-                container.querySelector('.edit-state').classList.remove('hidden');
-            } else {
-                container.querySelector('.edit-state').classList.add('hidden');
-                container.querySelector('.view-state').classList.remove('hidden');
-            }
+            document.getElementById('view-' + viewName)?.classList.remove('hidden');
+            document.querySelectorAll('.student-item').forEach(n => n.classList.remove('active'));
+
+            if (viewName === 'todos') document.getElementById('nav-todos').classList.add('active');
+            if (viewName === 'resources') document.getElementById('nav-resources').classList.add('active');
+            if (viewName === 'settings') document.getElementById('nav-settings').classList.add('active');
         }
 
-        // Mark Sent Logic
-        function markSent(btnId) {
-            const btn = document.getElementById(btnId);
-            btn.innerHTML = '✅ Sent';
-            btn.style.backgroundColor = '#dcfce7';
-            btn.style.color = '#166534';
-            btn.style.borderColor = '#bbf7d0';
-        }
+        // Modals Toggle
+        function openModal() { document.getElementById('add-student-modal').classList.remove('hidden'); }
+        function closeModal() { document.getElementById('add-student-modal').classList.add('hidden'); }
 
-        // Delete Student Logic
-        function deleteStudent() {
-            if(confirm("⚠️ Are you sure you want to delete Mia?\n\nHer data will be moved to the Bin and permanently deleted in 30 days unless recovered.")) {
-                const navMia = document.getElementById('nav-mia');
-                if(navMia) navMia.style.display = 'none';
-                
-                document.getElementById('bin-link').innerHTML = '🗑️ Bin (1)';
-                
-                document.getElementById('view-student').innerHTML = `
-                    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: var(--text-muted); text-align: center; margin-top: 100px;">
-                        <span style="font-size: 40px; margin-bottom: 16px;">🗑️</span>
-                        <h2 style="color: var(--text-main);">Student moved to Bin</h2>
-                        <p>Select another student from the sidebar.</p>
-                    </div>
-                `;
+        // Delete Student Engine
+        async function deleteActiveStudent() {
+            if (!activeStudentId) return;
+            if (confirm("Permanently delete this student and all records?")) {
+                await supabase.from('students').delete().eq('id', activeStudentId);
+                activeStudentId = null;
+                loadStudents();
+                switchView('todos');
             }
         }
     </script>
