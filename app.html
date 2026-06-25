@@ -327,8 +327,6 @@
                         <strong>⚠️ Notice:</strong> Add your first lesson note to unlock automatic metric and problem tracking patterns!
                     </div>
                     <ul class="snapshot-list">
-                        <li><strong>Contact:</strong> <span id="active-student-contact">-</span></li>
-                        <li><strong>Custom Rules:</strong> <span id="active-student-rules">None set</span></li>
                     </ul>
                 </div>
             </div>
@@ -531,7 +529,6 @@
         };
 
         // Select and view a specific student
-        // Select and view a specific student
         window.selectStudent = function(student) {
             activeStudentId = student.id;
             activeStudent = student; // Store full object for editing
@@ -540,14 +537,13 @@
             document.querySelectorAll('.student-item').forEach(el => el.classList.remove('active'));
             document.getElementById(`nav-student-${student.id}`).classList.add('active');
 
-            // --- RESTORED: Year group in brackets! ---
             const yearText = student.year_group ? ` (${student.year_group})` : '';
             document.getElementById('active-student-name').innerText = `${student.name}${yearText}`;
             
             document.getElementById('active-student-subject').innerText = student.subject || '-';
             document.getElementById('active-student-goal').innerText = student.goal || '-';
-            document.getElementById('active-student-contact').innerText = student.parent_contact || '-';
-            document.getElementById('active-student-rules').innerText = student.tracking_rules || 'None';
+            
+            // Note: Contact and Rules removal verified.
             
             switchView('student');
             loadTimeline();
@@ -621,11 +617,10 @@
                 
                 // If editing, instantly update the dashboard text without reloading
                 if (isEditing) {
-                    document.getElementById('active-student-name').innerText = name;
+                    const yearText = yearGroup ? ` (${yearGroup})` : '';
+                    document.getElementById('active-student-name').innerText = `${name}${yearText}`;
                     document.getElementById('active-student-subject').innerText = subject || '-';
                     document.getElementById('active-student-goal').innerText = goal || '-';
-                    document.getElementById('active-student-contact').innerText = parentContact || '-';
-                    document.getElementById('active-student-rules').innerText = trackingRules || 'None';
                     
                     // Update our stored object
                     activeStudent = { ...activeStudent, name, year_group: yearGroup, subject, goal, parent_contact: parentContact, tracking_rules: trackingRules };
@@ -690,6 +685,9 @@
             document.getElementById('mini-todo-form').classList.toggle('hidden');
         };
 
+        // Helper to safely join arrays or display strings for legacy compatibility
+        const safeJoin = (val) => Array.isArray(val) ? val.join(' ') : val;
+
         // Fetches lessons from Supabase and renders the timeline & snapshot
         window.loadTimeline = async function() {
             const container = document.getElementById('timeline-container');
@@ -716,16 +714,19 @@
                 snapshotWarning.classList.add('hidden');
                 const latestSnapshot = lessons[0].snapshot_data || {};
                 
-                // Safely render snapshot items
+                // Safely render snapshot items (avoids crashing on legacy strings!)
                 let snapshotHtml = '';
                 if (latestSnapshot.progress_notes && latestSnapshot.progress_notes.length > 0) {
-                    snapshotHtml += `<li style="margin-bottom: 8px;"><strong>📈 Progress:</strong> <span style="color: var(--text-muted);">${latestSnapshot.progress_notes.join(' ')}</span></li>`;
+                    snapshotHtml += `<li style="margin-bottom: 8px;"><strong>📈 Progress:</strong> <span style="color: var(--text-muted);">${safeJoin(latestSnapshot.progress_notes)}</span></li>`;
                 }
                 if (latestSnapshot.recurring_patterns && latestSnapshot.recurring_patterns.length > 0) {
-                    snapshotHtml += `<li style="margin-bottom: 8px;"><strong>⚠️ Recurring:</strong> <span style="color: var(--text-muted);">${latestSnapshot.recurring_patterns.join(' ')}</span></li>`;
+                    snapshotHtml += `<li style="margin-bottom: 8px;"><strong>⚠️ Recurring:</strong> <span style="color: var(--text-muted);">${safeJoin(latestSnapshot.recurring_patterns)}</span></li>`;
+                } else if (latestSnapshot.recurring_issues && latestSnapshot.recurring_issues.length > 0) {
+                    // Fallback for the very first legacy prompt
+                    snapshotHtml += `<li style="margin-bottom: 8px;"><strong>⚠️ Recurring:</strong> <span style="color: var(--text-muted);">${safeJoin(latestSnapshot.recurring_issues)}</span></li>`;
                 }
                 if (latestSnapshot.admin_notes && latestSnapshot.admin_notes.length > 0) {
-                    snapshotHtml += `<li style="margin-bottom: 8px;"><strong>📁 Admin:</strong> <span style="color: var(--text-muted);">${latestSnapshot.admin_notes.join(' ')}</span></li>`;
+                    snapshotHtml += `<li style="margin-bottom: 8px;"><strong>📁 Admin:</strong> <span style="color: var(--text-muted);">${safeJoin(latestSnapshot.admin_notes)}</span></li>`;
                 }
                 
                 snapshotList.innerHTML = snapshotHtml || `<li style="color: var(--text-muted); font-style: italic;">No specific patterns noted yet.</li>`;
@@ -778,7 +779,7 @@
                 let memoryHtml = '';
                 if (metrics.student_memory_updates && metrics.student_memory_updates.length > 0) {
                     memoryHtml = `<div class="warning-box" style="margin-bottom: 16px; background: var(--callout-blue-bg); border-color: var(--callout-blue-border); color: var(--callout-blue-text);">
-                        <strong>🧠 Note to self:</strong> ${metrics.student_memory_updates.join(' ')}
+                        <strong>🧠 Note to self:</strong> ${safeJoin(metrics.student_memory_updates)}
                     </div>`;
                 }
 
@@ -787,10 +788,10 @@
                 if ((metrics.homework && metrics.homework.length > 0) || (metrics.next_lesson_notes && metrics.next_lesson_notes.length > 0)) {
                     hwHtml = `<div class="lesson-hw-next" style="margin-top: 8px; border-top: 1px solid var(--border); padding-top: 16px;">`;
                     if (metrics.homework && metrics.homework.length > 0) {
-                        hwHtml += `<div style="margin-bottom: 6px;"><strong>Homework:</strong> <span style="color: var(--text-muted);">${metrics.homework.join(', ')}</span></div>`;
+                        hwHtml += `<div style="margin-bottom: 6px;"><strong>Homework:</strong> <span style="color: var(--text-muted);">${safeJoin(metrics.homework)}</span></div>`;
                     }
                     if (metrics.next_lesson_notes && metrics.next_lesson_notes.length > 0) {
-                        hwHtml += `<div><strong>Next Lesson:</strong> <span style="color: var(--text-muted);">${metrics.next_lesson_notes.join(', ')}</span></div>`;
+                        hwHtml += `<div><strong>Next Lesson:</strong> <span style="color: var(--text-muted);">${safeJoin(metrics.next_lesson_notes)}</span></div>`;
                     }
                     hwHtml += `</div>`;
                 }
@@ -855,10 +856,8 @@
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        // Pass the master anon key to bypass the broken gateway bouncer
                         'Authorization': `Bearer ${supabaseKey}`,
                         'apikey': supabaseKey,
-                        // Hand the real user token directly to our code through a backdoor
                         'x-user-token': session.access_token
                     },
                     body: JSON.stringify({ 
