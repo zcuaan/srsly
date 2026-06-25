@@ -704,7 +704,7 @@ window.processLessonNote = async function() {
 
     try {
         // Send the messy note to your Edge Function!
-        const { data, error } = await client.functions.invoke('process-lesson', {
+        const { data, error } = await client.functions.invoke('swift-handler', {
             body: { 
                 raw_note: rawNote, 
                 student_id: activeStudentId,
