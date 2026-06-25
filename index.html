@@ -631,53 +631,48 @@
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
     <script>
-        // View Switcher (Student, To-dos, Resources, Settings)
+        // 1. INITIALIZE SUPABASE
+        // ⚠️ Replace these with your actual URL and Anon Key from Supabase!
+        const supabaseUrl = 'https://jpjtsvsxdwwwknwggblo.supabase.co/';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpwanRzdnN4ZHd3d2tud2dnYmxvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIzNzMyNjAsImV4cCI6MjA5Nzk0OTI2MH0.7zobBlNHYyMPUhW-Ps_SbEbtdh_Nxe9kM6FvvwVS-vE';
+        const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+
+        // Since we aren't building login yet, we will use a fake "Tutor ID" 
+        // to pretend we are logged in as User #1.
+        const MY_TUTOR_ID = '11111111-1111-1111-1111-111111111111';
+
+        // View Switcher
         function switchView(viewName) {
             const views = ['view-student', 'view-settings', 'view-resources', 'view-todos'];
             const navs = ['nav-mia', 'nav-settings', 'nav-resources', 'nav-todos'];
 
-            // Hide all first
             views.forEach(v => document.getElementById(v)?.classList.add('hidden'));
             navs.forEach(n => document.getElementById(n)?.classList.remove('active'));
 
-            // Show selected
             document.getElementById('view-' + viewName)?.classList.remove('hidden');
             
-            if (viewName === 'student') {
-                document.getElementById('nav-mia')?.classList.add('active');
-            } else {
-                document.getElementById('nav-' + viewName)?.classList.add('active');
-            }
+            if (viewName === 'student') document.getElementById('nav-mia')?.classList.add('active');
+            else document.getElementById('nav-' + viewName)?.classList.add('active');
         }
 
         // Mini To-Do Form Toggle
         function toggleMiniTodo() {
             const form = document.getElementById('mini-todo-form');
-            if (form.classList.contains('hidden')) {
-                form.classList.remove('hidden');
-            } else {
-                form.classList.add('hidden');
-            }
+            form.classList.toggle('hidden');
         }
 
         // Action Items Checkbox Logic
         function toggleTodo(checkbox) {
-            if (checkbox.checked) {
-                checkbox.parentElement.classList.add('completed');
-            } else {
-                checkbox.parentElement.classList.remove('completed');
-            }
+            if (checkbox.checked) checkbox.parentElement.classList.add('completed');
+            else checkbox.parentElement.classList.remove('completed');
         }
 
         // Toggle Timeline Sections
         function toggleSection(sectionId) {
-            const section = document.getElementById(sectionId);
-            if (section.classList.contains('hidden')) {
-                section.classList.remove('hidden');
-            } else {
-                section.classList.add('hidden');
-            }
+            document.getElementById(sectionId).classList.toggle('hidden');
         }
 
         // Modal Logic (Add Student)
@@ -687,6 +682,60 @@
         function closeModal() {
             document.getElementById('add-student-modal').classList.add('hidden');
         }
+
+        // 2. SAVE STUDENT TO SUPABASE
+        async function saveStudent() {
+            // Grab the values from the modal inputs
+            const inputs = document.querySelectorAll('.modal-input');
+            const name = inputs[0].value;
+            const yearGroup = inputs[1].value;
+            const subject = inputs[2].value;
+            const goal = inputs[3].value;
+            const parentContact = inputs[4].value;
+            const trackingRules = inputs[5].value;
+
+            if (!name) {
+                alert("Please enter a student name!");
+                return;
+            }
+
+            // Change button text to show it's working
+            const saveBtn = document.querySelector('#add-student-modal .primary');
+            const originalText = saveBtn.innerText;
+            saveBtn.innerText = "Saving...";
+
+            // Send data to Supabase
+            const { data, error } = await supabase
+                .from('students')
+                .insert([
+                    {
+                        tutor_id: MY_TUTOR_ID,
+                        name: name,
+                        year_group: yearGroup,
+                        subject: subject,
+                        goal: goal,
+                        parent_contact: parentContact,
+                        tracking_rules: trackingRules
+                    }
+                ]);
+
+            if (error) {
+                console.error("Error saving student:", error);
+                alert("Something went wrong saving the student.");
+                saveBtn.innerText = originalText;
+            } else {
+                // Success! Close modal and clear inputs
+                closeModal();
+                inputs.forEach(input => input.value = '');
+                saveBtn.innerText = originalText;
+                alert("Student saved successfully to the database!");
+                
+                // (Later we will write a function here to refresh the sidebar list)
+            }
+        }
+
+        // Attach saveStudent to the modal's save button
+        document.querySelector('#add-student-modal .primary').onclick = saveStudent;
 
         // Edit Raw Note Logic
         function toggleEditNote(noteId, enteringEdit) {
@@ -721,7 +770,7 @@
                     <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: var(--text-muted); text-align: center; margin-top: 100px;">
                         <span style="font-size: 40px; margin-bottom: 16px;">🗑️</span>
                         <h2 style="color: var(--text-main);">Student moved to Bin</h2>
-                        <p>Select another student from the sidebar, or recover Mia from the Bin.</p>
+                        <p>Select another student from the sidebar.</p>
                     </div>
                 `;
             }
