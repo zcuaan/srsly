@@ -65,7 +65,7 @@
         .student-item:hover { background-color: var(--bg-hover); }
         .student-item.active { background-color: var(--bg-hover); font-weight: 600; }
 
-        /* Main Content */
+        /* Main Content Area */
         .main-content {
             flex: 1; padding: 40px 50px; display: flex; flex-direction: column;
             overflow-y: auto; max-width: 1200px; margin: 0 auto; width: 100%;
@@ -75,97 +75,102 @@
         .header h1 { margin: 0 0 4px 0; font-size: 28px; font-weight: 700; letter-spacing: -0.02em; color: var(--text-main); }
         .header-meta { color: var(--text-muted); font-size: 14px; display: flex; gap: 16px; }
 
-        .workspace { display: grid; grid-template-columns: 380px 1fr; gap: 40px; flex: 1; overflow: hidden; }
-        .col-left { display: flex; flex-direction: column; gap: 24px; overflow-y: auto; padding-right: 10px; }
-        .col-right { display: flex; flex-direction: column; overflow: hidden; }
-
-        h2 { margin-top: 0; font-size: 16px; font-weight: 600; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; color: var(--text-main); }
-        .card { background: var(--bg-main); border: 1px solid var(--border); border-radius: 8px; padding: 20px; }
-
-        /* Buttons & Inputs */
-        textarea, .text-input {
-            width: 100%; padding: 10px 12px; border: 1px solid var(--border);
-            border-radius: 6px; font-family: inherit; font-size: 14px; box-sizing: border-box;
-            background: var(--bg-main); color: var(--text-main); transition: border-color 0.2s;
-        }
-        textarea { height: 100px; resize: none; margin-bottom: 12px; }
-        textarea:focus, .text-input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 2px rgba(35, 131, 226, 0.1); }
-        
-        button.primary { background-color: var(--primary); color: white; border: none; padding: 10px 16px; border-radius: 6px; cursor: pointer; font-weight: 600; width: 100%; font-size: 14px; }
-        button.primary:hover { background-color: var(--primary-hover); }
-        
-        button.secondary { background-color: var(--bg-main); color: var(--text-main); border: 1px solid var(--border); padding: 8px 14px; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 13px; }
-        button.secondary:hover { background-color: var(--bg-hover); }
-        
         .btn-danger { background: #fff5f5; border: 1px solid #fed7d7; color: #c53030; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 13px; transition: all 0.2s;}
         .btn-danger:hover { background: #fed7d7; }
 
-        /* Actions Items */
-        .todo-list { display: flex; flex-direction: column; gap: 8px; }
-        .todo-item { display: flex; align-items: flex-start; gap: 8px; font-size: 14px; color: var(--text-main); transition: all 0.2s; }
-        .todo-item input[type="checkbox"] { margin-top: 4px; cursor: pointer; accent-color: var(--primary); }
+        /* Workspace Grid (Left/Right columns) */
+        .workspace { display: grid; grid-template-columns: 380px 1fr; gap: 40px; flex: 1; overflow: hidden; }
+        .col-left { display: flex; flex-direction: column; gap: 24px; overflow-y: auto; padding-right: 10px; padding-bottom: 40px; }
+        .col-right { display: flex; flex-direction: column; overflow: hidden; }
+
+        /* Cards and Structural Elements */
+        h2 { margin-top: 0; font-size: 16px; font-weight: 600; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; color: var(--text-main); }
+        .card { background: var(--bg-main); border: 1px solid var(--border); border-radius: 8px; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.02); }
+
+        /* Left Column Inputs */
+        .hero-title { font-size: 18px; font-weight: 600; margin: 0 0 12px 0; color: var(--text-main); display: flex; align-items: center; gap: 8px; }
+        
+        textarea, .text-input {
+            width: 100%; padding: 12px; border: 1px solid var(--border);
+            border-radius: 6px; font-family: inherit; font-size: 14px; box-sizing: border-box;
+            background: var(--bg-main); color: var(--text-main); transition: border-color 0.2s; resize: none;
+        }
+        textarea { height: 130px; margin-bottom: 12px; line-height: 1.5; }
+        textarea::placeholder { color: #b3b2b0; }
+        textarea:focus, .text-input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 2px rgba(35, 131, 226, 0.1); }
+        
+        button.primary { background-color: var(--primary); color: white; border: none; padding: 12px 16px; border-radius: 6px; cursor: pointer; font-weight: 600; width: 100%; font-size: 14px; transition: background-color 0.2s; }
+        button.primary:hover { background-color: var(--primary-hover); }
+        button.secondary { background-color: var(--bg-main); color: var(--text-main); border: 1px solid var(--border); padding: 8px 14px; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 13px; }
+        button.secondary:hover { background-color: var(--bg-hover); }
+
+        /* Snapshot specific */
+        .warning-box { background: var(--callout-yellow-bg); border: 1px solid var(--callout-yellow-border); border-radius: 6px; padding: 12px 16px; font-size: 14px; color: var(--callout-yellow-text); line-height: 1.5; margin-bottom: 16px; }
+        .snapshot-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px; font-size: 14px; color: var(--text-main); }
+        .snapshot-list strong { font-weight: 600; color: var(--text-muted); margin-right: 4px; }
+
+        /* Minimal To-Do List on Student Dash */
+        .todo-item { display: flex; align-items: flex-start; gap: 8px; font-size: 13px; color: var(--text-main); transition: all 0.2s; margin-top: 8px; }
+        .todo-item input[type="checkbox"] { margin-top: 3px; cursor: pointer; accent-color: var(--primary); }
         .todo-item.completed { text-decoration: line-through; opacity: 0.5; }
-
-        /* Quick Links */
-        .quick-link { display: flex; align-items: center; gap: 6px; color: var(--text-muted); text-decoration: none; padding: 4px 6px; border-radius: 4px; transition: all 0.2s; font-weight: 500;}
-        .quick-link:hover { background: var(--bg-hover); color: var(--text-main); }
-
-        /* Snapshot */
-        .warning-box { background: var(--callout-yellow-bg); border: 1px solid var(--callout-yellow-border); border-radius: 6px; padding: 14px 16px; font-size: 14px; color: var(--callout-yellow-text); line-height: 1.5; margin-bottom: 12px; }
-        .snapshot-box { background: var(--bg-main); border: 1px solid var(--border); border-radius: 6px; padding: 14px 16px; font-size: 14px; color: var(--text-main); line-height: 1.8; }
-        .snapshot-box strong { color: var(--text-muted); font-weight: 600; margin-right: 6px; }
+        .quick-link-btn { background: transparent; border: none; padding: 0; color: var(--text-muted); font-size: 13px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 4px; transition: color 0.2s;}
+        .quick-link-btn:hover { color: var(--text-main); }
+        .mini-form { background: var(--bg-hover); padding: 12px; border-radius: 6px; margin-top: 12px; border: 1px solid var(--border); }
 
         /* Timeline Styles */
-        .timeline-header { border-bottom: 1px solid var(--border); padding-bottom: 12px; margin-bottom: 16px; font-weight: 600; color: var(--text-main); }
+        .timeline-header { border-bottom: 1px solid var(--border); padding-bottom: 12px; margin-bottom: 16px; font-weight: 600; color: var(--text-main); font-size: 16px; }
         .timeline-container { overflow-y: auto; flex: 1; padding-right: 10px; padding-bottom: 40px; }
 
-        .lesson-card { border: 1px solid var(--border); border-radius: 8px; padding: 20px; margin-bottom: 20px; background: var(--bg-main); }
-        
-        .lesson-date-title { font-size: 20px; font-weight: 700; margin-bottom: 4px; color: var(--text-main); letter-spacing: -0.01em; display: flex; justify-content: space-between; align-items: center; }
+        .lesson-card { border: 1px solid var(--border); border-radius: 8px; padding: 20px; margin-bottom: 20px; background: var(--bg-main); box-shadow: 0 1px 3px rgba(0,0,0,0.02); }
+        .lesson-date-title { font-size: 20px; font-weight: 700; margin-bottom: 4px; color: var(--text-main); letter-spacing: -0.01em; }
         .lesson-topic-subtitle { font-size: 13px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 16px; }
         
-        /* Raw Note Box & Edit State */
-        .raw-note-box { background: var(--tag-gray-bg); border-left: 3px solid #d4d4d4; padding: 12px 14px; margin-bottom: 16px; font-size: 14px; color: var(--text-muted); border-radius: 0 6px 6px 0; line-height: 1.5; }
-        .raw-note-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
-        .raw-note-label { font-weight: 600; font-size: 12px; font-style: normal; text-transform: uppercase; color: var(--text-muted); }
-        .edit-btn-small { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 12px; font-weight: 600; padding: 2px 6px; border-radius: 4px; }
-        .edit-btn-small:hover { background: #e0e0e0; color: var(--text-main); }
-        .raw-note-text { font-style: italic; }
-        .edit-textarea { height: 80px; margin-bottom: 8px; }
-        .btn-cancel { background: white; border: 1px solid var(--border); padding: 6px 12px; border-radius: 6px; cursor: pointer; font-weight: 600; color: var(--text-main); }
-        .btn-cancel:hover { background: var(--bg-hover); }
-
-        .lesson-metrics { display: flex; gap: 12px; margin-bottom: 16px; font-size: 13px; flex-wrap: wrap; }
-        .pill { display: inline-flex; align-items: center; gap: 4px; padding: 4px 8px; border-radius: 4px; font-weight: 500; }
+        .lesson-metrics { display: flex; gap: 8px; margin-bottom: 16px; font-size: 13px; flex-wrap: wrap; }
+        .pill { display: inline-flex; align-items: center; gap: 4px; padding: 4px 8px; border-radius: 4px; font-weight: 500; font-size: 12px; }
         .pill.strength { background: var(--tag-green-bg); color: var(--tag-green-text); }
         .pill.weakness { background: var(--tag-red-bg); color: var(--tag-red-text); }
         .pill.gray { background: var(--tag-gray-bg); color: var(--tag-gray-text); }
 
-        .lesson-hw-next { margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border); font-size: 14px; color: var(--text-main); display: flex; flex-direction: column; gap: 8px;}
-        
-        .parent-msg-block { margin-top: 16px; background: var(--callout-green-bg); border: 1px solid var(--callout-green-border); border-radius: 6px; padding: 12px; }
-        .parent-msg-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;}
-        .parent-msg-title { font-size: 12px; font-weight: 700; color: var(--callout-green-text); text-transform: uppercase; letter-spacing: 0.5px; }
-        .copy-btn { background: var(--bg-main); border: 1px solid var(--callout-green-border); color: var(--callout-green-text); padding: 4px 8px; border-radius: 4px; font-size: 12px; cursor: pointer; font-weight: 600; transition: all 0.2s;}
-        .copy-btn:hover { background: #e3ede1; }
-        .parent-msg-text { font-size: 14px; color: var(--callout-green-text); line-height: 1.4;}
+        .lesson-hw-next { font-size: 14px; color: var(--text-main); display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
 
-        /* Notion Database Table Styles (For Resources) */
+        /* Toggle Buttons */
+        .action-buttons { display: flex; gap: 12px; border-top: 1px solid var(--border); padding-top: 16px; }
+        .btn-toggle { background: var(--tag-gray-bg); border: 1px solid transparent; color: var(--text-main); padding: 6px 12px; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 13px; transition: all 0.2s;}
+        .btn-toggle:hover { background: #e3e3e1; border-color: var(--border); }
+
+        /* Expandable Sections */
+        .expandable-section { margin-top: 12px; padding: 16px; border-radius: 8px; font-size: 14px; line-height: 1.5; }
+        .section-note { background: var(--tag-gray-bg); border-left: 3px solid #d4d4d4; color: var(--text-muted); }
+        .section-parent { background: var(--callout-green-bg); border: 1px solid var(--callout-green-border); color: var(--callout-green-text); }
+        
+        .raw-note-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+        .raw-note-label { font-weight: 700; font-size: 12px; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.5px; }
+        
+        .parent-header { display: flex; justify-content: space-between; margin-bottom: 12px; align-items: center; font-weight: 700; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--callout-green-text);}
+        .btn-copy { background: white; border: 1px solid var(--callout-green-border); color: var(--callout-green-text); padding: 6px 10px; border-radius: 4px; font-size: 12px; cursor: pointer; font-weight: 600; transition: all 0.2s;}
+        .btn-copy:hover { background: #e3ede1; }
+        
+        .edit-btn-small { background: none; border: 1px solid transparent; color: var(--text-muted); cursor: pointer; font-size: 12px; font-weight: 600; padding: 4px 8px; border-radius: 4px; }
+        .edit-btn-small:hover { background: #e0e0e0; border-color: var(--border); color: var(--text-main); }
+        .edit-textarea { height: 80px; margin-bottom: 8px; }
+
+        /* Notion Database Table Styles (For Resources & Global To-Dos) */
         .notion-group { margin-bottom: 40px; }
         .notion-group-header { display: flex; align-items: center; gap: 8px; font-size: 15px; font-weight: 600; margin-bottom: 12px; color: var(--text-main); cursor: pointer;}
-        .notion-group-count { color: var(--text-muted); font-weight: 400; font-size: 14px; margin-left: 4px; }
         
         .notion-table { border-top: 1px solid var(--border); font-size: 14px; border-bottom: 1px solid var(--border); }
         .notion-row { display: grid; grid-template-columns: minmax(220px, 1.5fr) 120px minmax(280px, 3fr) 80px; border-bottom: 1px solid var(--border); transition: background 0.1s; }
+        .notion-row.todo-layout { grid-template-columns: minmax(300px, 3fr) 140px 140px 140px; }
+        
         .notion-row:last-child { border-bottom: none; }
         .notion-row:not(.header):hover { background: var(--bg-hover); }
-        
         .notion-row.header { color: var(--text-muted); font-size: 13px; font-weight: 500; height: 36px; align-items: center; background: var(--bg-main); }
-        .notion-row.header:hover { background: var(--bg-main); }
         
         .notion-cell { padding: 8px 12px; display: flex; align-items: center; gap: 8px; border-right: 1px solid var(--border); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .notion-cell:last-child { border-right: none; }
         .notion-cell.notes { white-space: normal; color: var(--text-muted); line-height: 1.4; }
+        .quick-link { color: var(--text-muted); text-decoration: none; font-weight: 500; transition: color 0.2s;}
+        .quick-link:hover { color: var(--text-main); text-decoration: underline;}
 
         /* Settings Page */
         .settings-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
@@ -194,7 +199,6 @@
         .modal-actions { display: flex; justify-content: flex-end; gap: 12px; margin-top: 24px; }
 
         .hidden { display: none !important; }
-
     </style>
 </head>
 <body>
@@ -230,7 +234,7 @@
             </div>
 
             <div class="modal-actions">
-                <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+                <button class="btn-cancel" style="background: transparent; border: none; cursor: pointer; font-weight: 600;" onclick="closeModal()">Cancel</button>
                 <button class="primary" style="width: auto;" onclick="closeModal()">Save Student</button>
             </div>
         </div>
@@ -241,6 +245,11 @@
             <div class="logo">🦀 Tutor Log</div>
             <div class="subtitle">Never lose track of a student again.</div>
             
+            <div class="section-title">Workspace</div>
+            <ul class="student-list" style="margin-bottom: 16px;">
+                <li class="student-item" id="nav-todos" onclick="switchView('todos')">☑️ To-do list</li>
+            </ul>
+
             <div class="section-title">My Students</div>
             <ul class="student-list">
                 <li class="student-item active" id="nav-mia" onclick="switchView('student')">Mia (Year 8)</li>
@@ -278,100 +287,204 @@
 
         <div class="workspace">
             <div class="col-left">
+                
                 <div class="card">
-                    <h2>📝 Log Lesson</h2>
+                    <h2 class="hero-title">📝 What happened today?</h2>
                     <textarea placeholder="Type a quick lesson note — topics covered, scores, homework, parent reminders, cancellations, or anything Tutor Log should remember."></textarea>
                     <button class="primary">Save & create update</button>
                 </div>
 
                 <div class="card">
-                    <h2>📌 Action Items</h2>
-                    <div class="todo-list">
-                        <label class="todo-item">
-                            <input type="checkbox" onchange="toggleTodo(this)"> Check if mum booked the exam date yet.
-                        </label>
-                        <label class="todo-item">
-                            <input type="checkbox" onchange="toggleTodo(this)"> Print Algebra Worksheet 3 for next week.
-                        </label>
-                    </div>
-                </div>
-
-                <div class="card" style="background: transparent; border: none; padding: 0;">
                     <h2>🧠 Memory Snapshot</h2>
                     <div class="warning-box">
                         <strong>⚠️ Recurring Pattern:</strong> Over the last 5 lessons, Mia has struggled with <em>negative signs</em> 3 times.
                     </div>
-                    <div class="snapshot-box">
-                        <div><strong>Current Resource:</strong> Edexcel Foundation Textbook</div>
-                        <div><strong>Average Score:</strong> 74% <span style="color: var(--tag-green-text); font-weight: 600;">(Trending Up)</span></div>
-                        <div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--border);">
+                    <ul class="snapshot-list">
+                        <li><strong>Current resource:</strong> Edexcel Foundation Textbook</li>
+                        <li><strong>Average score:</strong> 74% <span style="color: var(--tag-green-text); font-weight: 600;">(Trending Up)</span></li>
+                        <li style="margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--border);">
                             <strong>Package Balance:</strong> 2 Lessons Remaining<br>
-                            <span style="font-size: 13px; color: var(--text-muted);">Last updated via note: Cancelled (Chargeable) on June 25th</span>
+                            <span style="font-size: 13px; color: var(--text-muted); font-weight: 400;">Last note: Cancelled (Chargeable) on June 25th</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <div style="padding: 0 4px;">
+                    <h2 style="font-size: 14px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;">☑️ Things to do</h2>
+                    
+                    <button class="quick-link-btn" onclick="toggleMiniTodo()">
+                        <span style="font-size: 16px;">+</span> Add to-do
+                    </button>
+                    
+                    <div id="mini-todo-form" class="mini-form hidden">
+                        <input type="text" class="text-input" placeholder="To-do (e.g. Send worksheet)" style="margin-bottom: 8px; padding: 8px;">
+                        <div style="display: flex; gap: 8px; align-items: center;">
+                            <span style="font-size: 12px; color: var(--text-muted);">Due:</span>
+                            <input type="text" class="text-input" placeholder="Optional" style="width: 100px; padding: 6px 8px; font-size: 12px;">
+                            <div style="flex: 1;"></div>
+                            <button class="secondary" style="padding: 6px 12px; border: none; background: transparent;" onclick="toggleMiniTodo()">Cancel</button>
+                            <button class="primary" style="padding: 6px 12px; width: auto;" onclick="toggleMiniTodo(); alert('Saved! You can view this on the Global To-do list.')">Save</button>
                         </div>
                     </div>
+
+                    <label class="todo-item">
+                        <input type="checkbox" onchange="toggleTodo(this)"> 
+                        Send Mia the factorising worksheet
+                        <span class="pill weakness" style="padding: 2px 6px; font-size: 11px;">Due: Today</span>
+                    </label>
                 </div>
+
             </div>
 
             <div class="col-right">
-                <div class="timeline-header">Lesson History</div>
+                <div class="timeline-header">Student timeline</div>
                 <div class="timeline-container">
                     
                     <div class="lesson-card">
-                        <div class="lesson-date-title">
-                            June 25, 2026
-                        </div>
+                        <div class="lesson-date-title">June 25, 2026</div>
                         <div class="lesson-topic-subtitle">Topic: Factorising Basic Expressions</div>
 
-                        <div class="raw-note-box" id="raw-note-5">
+                        <div class="lesson-metrics">
+                            <span class="pill gray">Score 8/10</span>
+                            <span class="pill strength">Method improving</span>
+                            <span class="pill weakness">Negative signs</span>
+                        </div>
+
+                        <div class="lesson-hw-next">
+                            <div><strong>Homework:</strong> Exercise 4B</div>
+                            <div><strong>Next:</strong> Consolidate negatives before moving on</div>
+                        </div>
+
+                        <div class="action-buttons">
+                            <button class="btn-toggle" onclick="toggleSection('note-5')">👁️ View your note</button>
+                            <button class="btn-toggle" onclick="toggleSection('parent-5')">📱 Parent update</button>
+                        </div>
+
+                        <div id="note-5" class="expandable-section section-note hidden">
                             <div class="view-state">
                                 <div class="raw-note-header">
                                     <span class="raw-note-label">Original Notes (Compiled)</span>
-                                    <button class="edit-btn-small" onclick="toggleEditNote('raw-note-5', true)">✏️ Edit</button>
+                                    <button class="edit-btn-small" onclick="toggleEditNote('note-5', true)">✏️ Edit</button>
                                 </div>
-                                <div class="raw-note-text" id="raw-text-display-5">
-                                    <div style="margin-bottom: 4px;"><strong>(17:20)</strong> Mia got 8/10 on the starter quiz.</div>
-                                    <div style="margin-bottom: 4px;"><strong>(17:30)</strong> Struggling with negative signs on question 4.</div>
-                                    <div><strong>(18:00)</strong> Homework is Ex 4B. Tell mum she's improving but needs to slow down.</div>
+                                <div class="raw-note-text">
+                                    <div style="margin-bottom: 4px; font-style: normal;"><strong>(17:20)</strong> <span style="font-style: italic;">Mia got 8/10 on the starter quiz.</span></div>
+                                    <div style="margin-bottom: 4px; font-style: normal;"><strong>(17:30)</strong> <span style="font-style: italic;">Struggling with negative signs on question 4.</span></div>
+                                    <div style="font-style: normal;"><strong>(18:00)</strong> <span style="font-style: italic;">Homework is Ex 4B. Tell mum she's improving but needs to slow down.</span></div>
                                 </div>
                             </div>
                             <div class="edit-state hidden">
                                 <div class="raw-note-header">
                                     <span class="raw-note-label">Edit Original Notes</span>
                                 </div>
-                                <textarea class="edit-textarea" id="raw-text-input-5">(17:20) Mia got 8/10 on the starter quiz.&#10;(17:30) Struggling with negative signs on question 4.&#10;(18:00) Homework is Ex 4B. Tell mum she's improving but needs to slow down.</textarea>
+                                <textarea class="text-input edit-textarea" style="background: white;">(17:20) Mia got 8/10 on the starter quiz.&#10;(17:30) Struggling with negative signs on question 4.&#10;(18:00) Homework is Ex 4B. Tell mum she's improving but needs to slow down.</textarea>
                                 <div style="display: flex; gap: 8px; justify-content: flex-end;">
-                                    <button class="btn-cancel" onclick="toggleEditNote('raw-note-5', false)">Cancel</button>
-                                    <button class="primary" style="width: auto; padding: 6px 12px;" onclick="saveNote('raw-note-5')">Save & Reprocess</button>
+                                    <button class="btn-cancel" style="background: transparent; border: none; cursor: pointer; font-weight: 600;" onclick="toggleEditNote('note-5', false)">Cancel</button>
+                                    <button class="primary" style="width: auto; padding: 6px 12px;" onclick="toggleEditNote('note-5', false)">Save & Reprocess</button>
                                 </div>
                             </div>
                         </div>
-                        
+
+                        <div id="parent-5" class="expandable-section section-parent hidden">
+                            <div class="parent-header">
+                                <span>Draft Update</span>
+                                <div style="display: flex; gap: 8px;">
+                                    <button class="btn-copy" onclick="alert('Copied to clipboard!')">📋 Copy Text</button>
+                                    <button class="btn-copy" id="mark-sent-btn-5" onclick="markSent('mark-sent-btn-5')">✔️ Mark sent</button>
+                                </div>
+                            </div>
+                            "Hi! Mia worked well today. She got 8/10 on her starter quiz and her method is improving, but negative signs are still causing some errors when she rushes. For homework, please have her do Ex 4B. Next lesson, we’ll spend a few minutes consolidating negatives."
+                        </div>
+                    </div>
+
+                    <div class="lesson-card">
+                        <div class="lesson-date-title">June 17, 2026</div>
+                        <div class="lesson-topic-subtitle">Topic: Expanding Double Brackets</div>
+
                         <div class="lesson-metrics">
-                            <div><span class="pill gray">Score: 8/10</span></div>
-                            <div><span class="pill strength">Method improving</span></div>
-                            <div><span class="pill weakness">Negative signs</span></div>
+                            <span class="pill gray">Score 6/10</span>
+                            <span class="pill strength">Grid method</span>
+                            <span class="pill weakness">Negative signs</span>
                         </div>
 
                         <div class="lesson-hw-next">
-                            <div>📚 <strong>Homework:</strong> Exercise 4B</div>
-                            <div>🎯 <strong>Next Lesson:</strong> Consolidate negatives before moving on</div>
+                            <div><strong>Homework:</strong> Ex 4C, Q1-10</div>
+                            <div><strong>Next:</strong> Practice negative multiplication</div>
                         </div>
 
-                        <div class="parent-msg-block">
-                            <div class="parent-msg-header">
-                                <span class="parent-msg-title">WhatsApp Update</span>
-                                <div style="display: flex; gap: 8px;">
-                                    <button class="copy-btn" onclick="alert('Copied to clipboard!')">📋 Copy Text</button>
-                                    <button class="copy-btn" id="mark-sent-btn-5" onclick="markSent('mark-sent-btn-5')">✔️ Mark sent</button>
+                        <div class="action-buttons">
+                            <button class="btn-toggle" onclick="toggleSection('note-4')">👁️ View your note</button>
+                            <button class="btn-toggle" onclick="toggleSection('parent-4')">📱 Parent update</button>
+                        </div>
+
+                        <div id="note-4" class="expandable-section section-note hidden">
+                            <div class="view-state">
+                                <div class="raw-note-header">
+                                    <span class="raw-note-label">Original Note</span>
+                                </div>
+                                <div class="raw-note-text" style="font-style: italic;">
+                                    "Got 6/10. Used the grid method which she liked, but still messing up the negative signs when multiplying. Hw is Ex 4C first ten questions."
                                 </div>
                             </div>
-                            <div class="parent-msg-text">
-                                "Hi! Mia worked well today. She got 8/10 on her starter quiz and her method is improving, but negative signs are still causing some errors when she rushes. For homework, please have her do Ex 4B. Next lesson, we’ll spend a few minutes consolidating negatives."
+                        </div>
+
+                        <div id="parent-4" class="expandable-section section-parent hidden">
+                            <div class="parent-header">
+                                <span>Draft Update</span>
+                                <div><span style="font-size: 12px; color: #166534;">✅ Sent on June 17</span></div>
                             </div>
+                            "Hi! Mia tried the grid method today and it helped a lot, but she is still getting caught out by negative signs. Homework is Ex 4C."
                         </div>
                     </div>
 
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="main-content hidden" id="view-todos">
+        <div class="header" style="margin-bottom: 40px;">
+            <div>
+                <h1>☑️ To-do list</h1>
+                <div class="header-meta">Manage tasks and reminders across all your students.</div>
+            </div>
+        </div>
+
+        <div class="notion-table">
+            <div class="notion-row header todo-layout">
+                <div class="notion-cell"><span>☑️</span> Task</div>
+                <div class="notion-cell"><span>👤</span> Student</div>
+                <div class="notion-cell"><span>📅</span> Added</div>
+                <div class="notion-cell"><span>⏰</span> Due</div>
+            </div>
+            
+            <div class="notion-row todo-layout">
+                <div class="notion-cell" style="font-weight: 500;">
+                    <input type="checkbox" style="margin-right: 8px; accent-color: var(--primary); cursor: pointer;">
+                    Send Mia the factorising worksheet
+                </div>
+                <div class="notion-cell"><span class="pill gray">Mia</span></div>
+                <div class="notion-cell notes">June 25</div>
+                <div class="notion-cell"><span class="pill weakness">Today</span></div>
+            </div>
+
+            <div class="notion-row todo-layout">
+                <div class="notion-cell" style="font-weight: 500;">
+                    <input type="checkbox" style="margin-right: 8px; accent-color: var(--primary); cursor: pointer;">
+                    Mark mock paper 1 before next session
+                </div>
+                <div class="notion-cell"><span class="pill gray">Alex</span></div>
+                <div class="notion-cell notes">June 24</div>
+                <div class="notion-cell"><span class="pill gray">June 28</span></div>
+            </div>
+
+            <div class="notion-row todo-layout">
+                <div class="notion-cell" style="font-weight: 500;">
+                    <input type="checkbox" style="margin-right: 8px; accent-color: var(--primary); cursor: pointer;">
+                    Invoice mum for May lessons
+                </div>
+                <div class="notion-cell"><span class="pill gray">Sam</span></div>
+                <div class="notion-cell notes">June 20</div>
+                <div class="notion-cell"><span class="pill weakness">Overdue</span></div>
             </div>
         </div>
     </div>
@@ -388,7 +501,6 @@
             <div class="notion-group-header">
                 <span>▾</span> <span>✨ Science & Maths</span> <span class="notion-group-count">3</span>
             </div>
-            
             <div class="notion-table">
                 <div class="notion-row header">
                     <div class="notion-cell"><span>Aa</span> Resource name</div>
@@ -396,30 +508,23 @@
                     <div class="notion-cell"><span>🎯</span> Best for</div>
                     <div class="notion-cell"><span>↗</span> Link</div>
                 </div>
-                
                 <div class="notion-row">
                     <div class="notion-cell"><span>📄</span> Physics & Maths Tutor</div>
                     <div class="notion-cell"><span class="pill gray">Free</span></div>
                     <div class="notion-cell notes">GCSE/A-Level past papers and topic questions</div>
                     <div class="notion-cell"><a href="#" class="quick-link">Open</a></div>
                 </div>
-
                 <div class="notion-row">
                     <div class="notion-cell"><span>📄</span> SaveMyExams</div>
                     <div class="notion-cell"><span class="pill strength">Freemium</span></div>
                     <div class="notion-cell notes">Structured revision notes and topic questions</div>
                     <div class="notion-cell"><a href="#" class="quick-link">Open</a></div>
                 </div>
-
                 <div class="notion-row">
                     <div class="notion-cell"><span>📄</span> CorbettMaths</div>
                     <div class="notion-cell"><span class="pill gray">Free</span></div>
                     <div class="notion-cell notes">Videos, worksheets, and daily "5-a-day" practice</div>
                     <div class="notion-cell"><a href="#" class="quick-link">Open</a></div>
-                </div>
-                
-                <div class="notion-row" style="color: var(--text-muted); cursor: pointer;">
-                    <div class="notion-cell" style="grid-column: 1 / -1; border-right: none;">+ New resource</div>
                 </div>
             </div>
         </div>
@@ -428,7 +533,6 @@
             <div class="notion-group-header">
                 <span>▾</span> <span>📖 Primary & 11+</span> <span class="notion-group-count">3</span>
             </div>
-            
             <div class="notion-table">
                 <div class="notion-row header">
                     <div class="notion-cell"><span>Aa</span> Resource name</div>
@@ -436,34 +540,26 @@
                     <div class="notion-cell"><span>🎯</span> Best for</div>
                     <div class="notion-cell"><span>↗</span> Link</div>
                 </div>
-                
                 <div class="notion-row">
                     <div class="notion-cell"><span>📚</span> CGP 10-Minute Tests</div>
                     <div class="notion-cell"><span class="pill gray">Book</span></div>
                     <div class="notion-cell notes">Quick 11+ homework or lesson starters</div>
                     <div class="notion-cell"><a href="#" class="quick-link">Open</a></div>
                 </div>
-
                 <div class="notion-row">
                     <div class="notion-cell"><span>📚</span> Bond 11+ Assessment Papers</div>
                     <div class="notion-cell"><span class="pill gray">Book</span></div>
                     <div class="notion-cell notes">Workbooks for 11+ Maths, English, and Reasoning prep</div>
                     <div class="notion-cell"><a href="#" class="quick-link">Open</a></div>
                 </div>
-
                 <div class="notion-row">
                     <div class="notion-cell"><span>🎨</span> Twinkl</div>
                     <div class="notion-cell"><span class="pill strength">Subscription</span></div>
                     <div class="notion-cell notes">Primary worksheets and visual activities</div>
                     <div class="notion-cell"><a href="#" class="quick-link">Open</a></div>
                 </div>
-                
-                <div class="notion-row" style="color: var(--text-muted); cursor: pointer;">
-                    <div class="notion-cell" style="grid-column: 1 / -1; border-right: none;">+ New resource</div>
-                </div>
             </div>
         </div>
-
     </div>
 
     <div class="main-content hidden" id="view-settings">
@@ -487,7 +583,7 @@
                     <div style="font-size: 13px; color: var(--callout-blue-text); margin-bottom: 16px;">
                         Need more space? Add unlimited students for just <strong>£1.50/month</strong> per active student.
                     </div>
-                    <button class="primary" style="background: var(--callout-blue-text); border: none;">Upgrade to Pro</button>
+                    <button class="primary" style="background: var(--primary); border: none;">Upgrade to Pro</button>
                 </div>
 
                 <div class="card" style="margin-bottom: 24px;">
@@ -509,7 +605,7 @@
                         Add a master rule that the AI will follow for <strong>all</strong> your students.
                     </p>
                     <label class="settings-label">Default Tracking Rule</label>
-                    <textarea placeholder="e.g., Always track homework scores out of 10..." style="height: 80px;"></textarea>
+                    <textarea class="text-input" placeholder="e.g., Always track homework scores out of 10..." style="height: 80px; margin-bottom: 16px;"></textarea>
                     
                     <label class="settings-label">Parent Update Tone</label>
                     <select class="text-input" style="margin-bottom: 16px;">
@@ -528,7 +624,7 @@
                     <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 16px;">Export your notes or permanently delete your account.</p>
                     <div style="display: flex; flex-direction: column; gap: 12px;">
                         <button class="secondary">⬇️ Export All Data (.CSV)</button>
-                        <button class="btn-danger">🗑️ Delete Account</button>
+                        <button class="btn-danger" style="background: #fff5f5; color: #c53030; text-align: center;">🗑️ Delete Account</button>
                     </div>
                 </div>
             </div>
@@ -536,38 +632,32 @@
     </div>
 
     <script>
-        // View Switcher (Student, Resources, Settings)
+        // View Switcher (Student, To-dos, Resources, Settings)
         function switchView(viewName) {
-            // Get all views
-            const studentView = document.getElementById('view-student');
-            const settingsView = document.getElementById('view-settings');
-            const resourcesView = document.getElementById('view-resources');
-            
-            // Get Nav Items
-            const navMia = document.getElementById('nav-mia');
-            const navSettings = document.getElementById('nav-settings');
-            const navResources = document.getElementById('nav-resources');
+            const views = ['view-student', 'view-settings', 'view-resources', 'view-todos'];
+            const navs = ['nav-mia', 'nav-settings', 'nav-resources', 'nav-todos'];
 
             // Hide all first
-            studentView.classList.add('hidden');
-            settingsView.classList.add('hidden');
-            resourcesView.classList.add('hidden');
-            
-            // Remove active state from all
-            if(navMia) navMia.classList.remove('active');
-            navSettings.classList.remove('active');
-            navResources.classList.remove('active');
+            views.forEach(v => document.getElementById(v)?.classList.add('hidden'));
+            navs.forEach(n => document.getElementById(n)?.classList.remove('active'));
 
-            // Show selected view and highlight nav
-            if (viewName === 'settings') {
-                settingsView.classList.remove('hidden');
-                navSettings.classList.add('active');
-            } else if (viewName === 'resources') {
-                resourcesView.classList.remove('hidden');
-                navResources.classList.add('active');
+            // Show selected
+            document.getElementById('view-' + viewName)?.classList.remove('hidden');
+            
+            if (viewName === 'student') {
+                document.getElementById('nav-mia')?.classList.add('active');
             } else {
-                studentView.classList.remove('hidden');
-                if(navMia) navMia.classList.add('active');
+                document.getElementById('nav-' + viewName)?.classList.add('active');
+            }
+        }
+
+        // Mini To-Do Form Toggle
+        function toggleMiniTodo() {
+            const form = document.getElementById('mini-todo-form');
+            if (form.classList.contains('hidden')) {
+                form.classList.remove('hidden');
+            } else {
+                form.classList.add('hidden');
             }
         }
 
@@ -577,6 +667,16 @@
                 checkbox.parentElement.classList.add('completed');
             } else {
                 checkbox.parentElement.classList.remove('completed');
+            }
+        }
+
+        // Toggle Timeline Sections
+        function toggleSection(sectionId) {
+            const section = document.getElementById(sectionId);
+            if (section.classList.contains('hidden')) {
+                section.classList.remove('hidden');
+            } else {
+                section.classList.add('hidden');
             }
         }
 
@@ -598,15 +698,6 @@
                 container.querySelector('.edit-state').classList.add('hidden');
                 container.querySelector('.view-state').classList.remove('hidden');
             }
-        }
-        
-        function saveNote(noteId) {
-            const container = document.getElementById(noteId);
-            // Replace newlines with <br> to retain formatting
-            const newText = container.querySelector('.edit-textarea').value.replace(/\n/g, "<br>");
-            container.querySelector('.raw-note-text').innerHTML = newText;
-            toggleEditNote(noteId, false);
-            alert("Original note saved. In the real app, this would trigger the AI to re-read and update the logs below!");
         }
 
         // Mark Sent Logic
