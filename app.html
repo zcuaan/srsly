@@ -492,6 +492,7 @@
             currentUser = user;
             document.getElementById('auth-screen').classList.add('hidden');
             loadStudents();
+            loadTodos();
             switchView('todos'); // Default view on landing
         };
 
@@ -544,7 +545,6 @@
             document.getElementById('active-student-contact').innerText = student.parent_contact || '-';
             document.getElementById('active-student-rules').innerText = student.tracking_rules || 'None';
             
-
             switchView('student');
             loadTimeline(); // <--- ADD THIS LINE
         };
@@ -640,6 +640,7 @@
             document.getElementById('view-' + viewName)?.classList.remove('hidden');
             document.querySelectorAll('.student-item').forEach(n => n.classList.remove('active'));
 
+            if (viewName === 'todos') loadTodos();
             if (viewName === 'todos') document.getElementById('nav-todos').classList.add('active');
             if (viewName === 'resources') document.getElementById('nav-resources').classList.add('active');
             if (viewName === 'settings') document.getElementById('nav-settings').classList.add('active');
@@ -686,148 +687,199 @@
         };
 
         // Fetches lessons from Supabase and renders the timeline & snapshot
-window.loadTimeline = async function() {
-    const container = document.getElementById('timeline-container');
-    container.innerHTML = '<div style="color: var(--text-muted); text-align: center; margin-top: 40px;">Loading timeline...</div>';
+        window.loadTimeline = async function() {
+            const container = document.getElementById('timeline-container');
+            container.innerHTML = '<div style="color: var(--text-muted); text-align: center; margin-top: 40px;">Loading timeline...</div>';
 
-    if (!activeStudentId) return;
+            if (!activeStudentId) return;
 
-    // Fetch lessons for this student
-    const { data: lessons, error } = await client
-        .from('lessons')
-        .select('*')
-        .eq('student_id', activeStudentId)
-        .order('lesson_date', { ascending: false });
+            // Fetch lessons for this student
+            const { data: lessons, error } = await client
+                .from('lessons')
+                .select('*')
+                .eq('student_id', activeStudentId)
+                .order('lesson_date', { ascending: false });
 
-    if (error) {
-        container.innerHTML = `<div style="color: red; text-align: center; margin-top: 40px;">Error loading timeline: ${error.message}</div>`;
-        return;
-    }
+            if (error) {
+                container.innerHTML = `<div style="color: red; text-align: center; margin-top: 40px;">Error loading timeline: ${error.message}</div>`;
+                return;
+            }
 
-    // --- NEW: UPDATE THE MEMORY SNAPSHOT ---
-    const snapshotWarning = document.querySelector('.warning-box');
-    const snapshotList = document.querySelector('.snapshot-list');
-    
-    if (lessons.length > 0) {
-        snapshotWarning.classList.add('hidden'); // Hide the warning
-        const latestSnapshot = lessons[0].snapshot_data || {};
-        
-        snapshotList.innerHTML = `
-            <li><strong>Contact:</strong> <span>${activeStudent.parent_contact || '-'}</span></li>
-            <li><strong>Custom Rules:</strong> <span>${activeStudent.tracking_rules || 'None set'}</span></li>
-            <li style="margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border);">
-                <strong>⚠️ Recurring:</strong> <span style="color: var(--text-muted);">${latestSnapshot.recurring_issues || 'None detected yet.'}</span>
-            </li>
-            <li style="margin-top: 6px;">
-                <strong>📈 Progress:</strong> <span style="color: var(--text-muted);">${latestSnapshot.progress_notes || 'Keep adding notes to build patterns.'}</span>
-            </li>
-        `;
-    } else {
-        snapshotWarning.classList.remove('hidden');
-        snapshotList.innerHTML = `
-            <li><strong>Contact:</strong> <span>${activeStudent.parent_contact || '-'}</span></li>
-            <li><strong>Custom Rules:</strong> <span>${activeStudent.tracking_rules || 'None set'}</span></li>
-        `;
-        container.innerHTML = '<div style="color: var(--text-muted); text-align: center; margin-top: 40px;">No lesson notes saved yet for this student.</div>';
-        return;
-    }
-
-    // --- RENDER THE TIMELINE ---
-    container.innerHTML = ''; 
-    lessons.forEach(lesson => {
-        const metrics = lesson.metrics || {};
-        
-        const cardHtml = `
-            <div class="lesson-card">
-                <div class="lesson-date-title">${new Date(lesson.lesson_date).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'short' })}</div>
+            // --- NEW: UPDATE THE MEMORY SNAPSHOT ---
+            const snapshotWarning = document.querySelector('.warning-box');
+            const snapshotList = document.querySelector('.snapshot-list');
+            
+            if (lessons.length > 0) {
+                snapshotWarning.classList.add('hidden'); // Hide the warning
+                const latestSnapshot = lessons[0].snapshot_data || {};
                 
-                <div class="lesson-metrics" style="margin-top: 12px;">
-                    <span class="pill gray">🎯 Score: ${metrics.Score || 'N/A'}</span>
-                    <span class="pill strength">💪 Strength: ${metrics.Strength || 'N/A'}</span>
-                    <span class="pill weakness">⚠️ Focus: ${metrics.Weakness || 'N/A'}</span>
-                </div>
+                snapshotList.innerHTML = `
+                    <li><strong>Contact:</strong> <span>${activeStudent.parent_contact || '-'}</span></li>
+                    <li><strong>Custom Rules:</strong> <span>${activeStudent.tracking_rules || 'None set'}</span></li>
+                    <li style="margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border);">
+                        <strong>⚠️ Recurring:</strong> <span style="color: var(--text-muted);">${latestSnapshot.recurring_issues || 'None detected yet.'}</span>
+                    </li>
+                    <li style="margin-top: 6px;">
+                        <strong>📈 Progress:</strong> <span style="color: var(--text-muted);">${latestSnapshot.progress_notes || 'Keep adding notes to build patterns.'}</span>
+                    </li>
+                `;
+            } else {
+                snapshotWarning.classList.remove('hidden');
+                snapshotList.innerHTML = `
+                    <li><strong>Contact:</strong> <span>${activeStudent.parent_contact || '-'}</span></li>
+                    <li><strong>Custom Rules:</strong> <span>${activeStudent.tracking_rules || 'None set'}</span></li>
+                `;
+                container.innerHTML = '<div style="color: var(--text-muted); text-align: center; margin-top: 40px;">No lesson notes saved yet for this student.</div>';
+                return;
+            }
 
-                <div class="lesson-hw-next">
-                    <strong>Homework & Next Steps:</strong>
-                    <div style="color: var(--text-muted);">${lesson.homework_next_steps || 'None set.'}</div>
-                </div>
+            // --- RENDER THE TIMELINE ---
+            container.innerHTML = ''; 
+            lessons.forEach(lesson => {
+                const metrics = lesson.metrics || {};
+                
+                const cardHtml = `
+                    <div class="lesson-card">
+                        <div class="lesson-date-title">${new Date(lesson.lesson_date).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'short' })}</div>
+                        
+                        <div class="lesson-metrics" style="margin-top: 12px;">
+                            <span class="pill gray">🎯 Score: ${metrics.Score || 'N/A'}</span>
+                            <span class="pill strength">💪 Strength: ${metrics.Strength || 'N/A'}</span>
+                            <span class="pill weakness">⚠️ Focus: ${metrics.Weakness || 'N/A'}</span>
+                        </div>
 
-                <div class="expandable-section section-parent">
-                    <div class="parent-header">
-                        💬 Parent Update Draft
-                        <button class="btn-copy" onclick="navigator.clipboard.writeText('${(lesson.parent_update || '').replace(/'/g, "\\'")}'); this.innerText='Copied!'; setTimeout(() => this.innerText='Copy', 2000);">Copy</button>
+                        <div class="lesson-hw-next">
+                            <strong>Homework & Next Steps:</strong>
+                            <div style="color: var(--text-muted);">${lesson.homework_next_steps || 'None set.'}</div>
+                        </div>
+
+                        <div class="expandable-section section-parent">
+                            <div class="parent-header">
+                                💬 Parent Update Draft
+                                <button class="btn-copy" onclick="navigator.clipboard.writeText('${(lesson.parent_update || '').replace(/'/g, "\\'")}'); this.innerText='Copied!'; setTimeout(() => this.innerText='Copy', 2000);">Copy</button>
+                            </div>
+                            <div>${lesson.parent_update || 'No update generated.'}</div>
+                        </div>
+                        
+                        <details style="margin-top: 16px; font-size: 12px; color: var(--text-muted);">
+                            <summary style="cursor: pointer; font-weight: 600;">View Raw Note</summary>
+                            <div style="padding-top: 8px; font-style: italic;">"${lesson.raw_note}"</div>
+                        </details>
                     </div>
-                    <div>${lesson.parent_update || 'No update generated.'}</div>
-                </div>
-                
-                <details style="margin-top: 16px; font-size: 12px; color: var(--text-muted);">
-                    <summary style="cursor: pointer; font-weight: 600;">View Raw Note</summary>
-                    <div style="padding-top: 8px; font-style: italic;">"${lesson.raw_note}"</div>
-                </details>
-            </div>
-        `;
-        container.insertAdjacentHTML('beforeend', cardHtml);
-    });
-};
+                `;
+                container.insertAdjacentHTML('beforeend', cardHtml);
+            });
+        };
 
         // Connects the AI Brain to the Hero Input
-window.processLessonNote = async function() {
-    const rawNoteInput = document.getElementById('lesson-raw-input');
-    const rawNote = rawNoteInput.value.trim();
-    const saveBtn = document.getElementById('save-note-btn');
+        window.processLessonNote = async function() {
+            const rawNoteInput = document.getElementById('lesson-raw-input');
+            const rawNote = rawNoteInput.value.trim();
+            const saveBtn = document.getElementById('save-note-btn');
 
-    if (!rawNote) return alert("Please type a lesson note first!");
-    if (!activeStudentId) return alert("Please select a student from the sidebar.");
+            if (!rawNote) return alert("Please type a lesson note first!");
+            if (!activeStudentId) return alert("Please select a student from the sidebar.");
 
-    // Enter loading state
-    saveBtn.innerText = "🧠 Processing with AI...";
-    saveBtn.disabled = true;
-    saveBtn.style.opacity = "0.7";
+            // Enter loading state
+            saveBtn.innerText = "🧠 Processing with AI...";
+            saveBtn.disabled = true;
+            saveBtn.style.opacity = "0.7";
 
-    try {
-        const { data: { session } } = await client.auth.getSession();
-        if (!session) throw new Error("You are not logged in. Please refresh and log in again.");
+            try {
+                const { data: { session } } = await client.auth.getSession();
+                if (!session) throw new Error("You are not logged in. Please refresh and log in again.");
 
-        // THE BYPASS REQUEST
-        const response = await fetch(`${supabaseUrl}/functions/v1/swift-handler`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                // Pass the master anon key to bypass the broken gateway bouncer
-                'Authorization': `Bearer ${supabaseKey}`,
-                'apikey': supabaseKey,
-                // Hand the real user token directly to our code through a backdoor
-                'x-user-token': session.access_token
-            },
-            body: JSON.stringify({ 
-                raw_note: rawNote, 
-                student_id: activeStudentId,
-                tracking_rules: activeStudent.tracking_rules 
-            })
-        });
+                // THE BYPASS REQUEST
+                const response = await fetch(`${supabaseUrl}/functions/v1/swift-handler`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        // Pass the master anon key to bypass the broken gateway bouncer
+                        'Authorization': `Bearer ${supabaseKey}`,
+                        'apikey': supabaseKey,
+                        // Hand the real user token directly to our code through a backdoor
+                        'x-user-token': session.access_token
+                    },
+                    body: JSON.stringify({ 
+                        raw_note: rawNote, 
+                        student_id: activeStudentId,
+                        tracking_rules: activeStudent.tracking_rules 
+                    })
+                });
 
-        const data = await response.json();
+                const data = await response.json();
 
-        if (!response.ok) {
-            throw new Error(data.error || `Status ${response.status}`);
-        }
+                if (!response.ok) {
+                    throw new Error(data.error || `Status ${response.status}`);
+                }
 
-        // Clear input and reset UI
-        rawNoteInput.value = '';
-        
-        // Reload the timeline dynamically without alerting!
-        await loadTimeline();
+                // Clear input and reset UI
+                rawNoteInput.value = '';
+                
+                // Reload the timeline dynamically without alerting!
+                await loadTimeline();
 
-    } catch (err) {
-        alert("Error: " + err.message);
-        console.error("RAW ERROR DETAILS:", err);
-    } finally {
-        // Reset the button back to normal
-        saveBtn.innerText = "Save & create update";
-        saveBtn.disabled = false;
-        saveBtn.style.opacity = "1";
-    }
-};
+            } catch (err) {
+                alert("Error: " + err.message);
+                console.error("RAW ERROR DETAILS:", err);
+            } finally {
+                // Reset the button back to normal
+                saveBtn.innerText = "Save & create update";
+                saveBtn.disabled = false;
+                saveBtn.style.opacity = "1";
+            }
+        };
+
+        // Fetches all uncompleted To-Dos for the active tutor
+        window.loadTodos = async function() {
+            const todoContainer = document.querySelector('#view-todos .notion-table');
+            
+            const { data: todos, error } = await client
+                .from('todos')
+                .select('*, students(name)')
+                .eq('tutor_id', currentUser.id)
+                .eq('is_completed', false)
+                .order('created_at', { ascending: false });
+
+            if (error) return console.error("Error loading todos:", error);
+
+            let html = `
+                <div class="notion-row header todo-layout">
+                    <div class="notion-cell"><span>📌</span> Task</div>
+                    <div class="notion-cell"><span>👤</span> Student</div>
+                    <div class="notion-cell"><span>📅</span> Added</div>
+                    <div class="notion-cell"><span>⏰</span> Due</div>
+                </div>
+            `;
+
+            if (todos.length === 0) {
+                html += `<div style="padding: 20px; text-align: center; color: var(--text-muted);">No open tasks! You are all caught up.</div>`;
+            } else {
+                todos.forEach(todo => {
+                    const studentName = todo.students ? todo.students.name : 'General';
+                    html += `
+                        <div class="notion-row todo-layout" id="todo-${todo.id}">
+                            <div class="notion-cell" style="font-weight: 500;">
+                                <input type="checkbox" style="margin-right: 12px; accent-color: var(--primary); cursor: pointer;" 
+                                       onclick="completeTodo('${todo.id}')">
+                                ${todo.task}
+                            </div>
+                            <div class="notion-cell" style="color: var(--text-muted);"><span class="pill gray">${studentName}</span></div>
+                            <div class="notion-cell"><span style="color: var(--text-muted); font-size: 12px;">${new Date(todo.created_at).toLocaleDateString()}</span></div>
+                            <div class="notion-cell"><span style="color: var(--text-muted); font-size: 12px;">${todo.due_date || '-'}</span></div>
+                        </div>
+                    `;
+                });
+            }
+            todoContainer.innerHTML = html;
+        };
+
+        // Marks a To-Do as completed in the database
+        window.completeTodo = async function(todoId) {
+            document.getElementById(`todo-${todoId}`).style.opacity = '0.4';
+            await client.from('todos').update({ is_completed: true }).eq('id', todoId);
+            setTimeout(loadTodos, 500); // Refresh the list
+        };
     </script>
 </body>
 </html>
