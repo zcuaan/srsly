@@ -694,6 +694,15 @@
         // Helper to safely join arrays or display strings for legacy compatibility
         const safeJoin = (val) => Array.isArray(val) ? val.join(' ') : val;
 
+        function escapeHtml(value) {
+    return String(value)
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#039;');
+}
+
         // Fetches lessons from Supabase and renders the timeline & snapshot
         window.loadTimeline = async function() {
             const container = document.getElementById('timeline-container');
@@ -790,17 +799,52 @@
                 }
 
                 // 6. Homework / Next Steps
-                let hwHtml = '';
-                if ((metrics.homework && metrics.homework.length > 0) || (metrics.next_lesson_notes && metrics.next_lesson_notes.length > 0)) {
-                    hwHtml = `<div class="lesson-hw-next" style="margin-top: 8px; border-top: 1px solid var(--border); padding-top: 16px;">`;
-                    if (metrics.homework && metrics.homework.length > 0) {
-                        hwHtml += `<div style="margin-bottom: 6px;"><strong>Homework:</strong> <span style="color: var(--text-muted);">${safeJoin(metrics.homework)}</span></div>`;
-                    }
-                    if (metrics.next_lesson_notes && metrics.next_lesson_notes.length > 0) {
-                        hwHtml += `<div><strong>Next Lesson:</strong> <span style="color: var(--text-muted);">${safeJoin(metrics.next_lesson_notes)}</span></div>`;
-                    }
-                    hwHtml += `</div>`;
-                }
+let hwHtml = '';
+
+const homework = Array.isArray(metrics.homework) ? metrics.homework.filter(Boolean) : [];
+const nextSteps = Array.isArray(metrics.next_lesson_notes) ? metrics.next_lesson_notes.filter(Boolean) : [];
+
+if (homework.length > 0 || nextSteps.length > 0) {
+    hwHtml = `<div class="lesson-hw-next" style="margin-top: 8px; border-top: 1px solid var(--border); padding-top: 16px;">`;
+
+    if (homework.length === 1) {
+        hwHtml += `
+            <div style="margin-bottom: 6px;">
+                <strong>Homework:</strong>
+                <span style="color: var(--text-muted);">${escapeHtml(homework[0])}</span>
+            </div>
+        `;
+    } else if (homework.length > 1) {
+        hwHtml += `
+            <div style="margin-bottom: 10px;">
+                <strong>Homework:</strong>
+                <ul style="margin: 6px 0 0 20px; padding: 0; color: var(--text-muted);">
+                    ${homework.map(item => `<li>${escapeHtml(item)}</li>`).join('')}
+                </ul>
+            </div>
+        `;
+    }
+
+    if (nextSteps.length === 1) {
+        hwHtml += `
+            <div>
+                <strong>Next Lesson:</strong>
+                <span style="color: var(--text-muted);">${escapeHtml(nextSteps[0])}</span>
+            </div>
+        `;
+    } else if (nextSteps.length > 1) {
+        hwHtml += `
+            <div>
+                <strong>Next Lesson:</strong>
+                <ul style="margin: 6px 0 0 20px; padding: 0; color: var(--text-muted);">
+                    ${nextSteps.map(item => `<li>${escapeHtml(item)}</li>`).join('')}
+                </ul>
+            </div>
+        `;
+    }
+
+    hwHtml += `</div>`;
+}
 
                 // Compile Card
                 const cardHtml = `
@@ -946,6 +990,7 @@
             await client.from('todos').update({ is_completed: true }).eq('id', todoId);
             setTimeout(loadTodos, 500); // Refresh the list
         };
+        
     </script>
 </body>
 </html>
