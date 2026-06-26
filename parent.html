@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Portal | Tutor Log</title>
+    <style>
+        :root {
+            --bg-main: #ffffff;
+            --bg-sidebar: #f7f7f5;
+            --text-main: #37352f;
+            --text-muted: #787774;
+            --border: #e9e9e7;
+            --tag-green-bg: #e6eed5;
+            --tag-green-text: #416024;
+            --tag-red-bg: #fae1dd;
+            --tag-red-text: #8c2615;
+            --tag-gray-bg: #f1f1ef;
+            --tag-gray-text: #505050;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-sidebar);
+            color: var(--text-main);
+            margin: 0; padding: 40px 20px;
+            display: flex; flex-direction: column; align-items: center;
+        }
+
+        .container {
+            width: 100%; max-width: 600px;
+        }
+
+        .header-card {
+            background: var(--bg-main); border: 1px solid var(--border); border-radius: 12px;
+            padding: 30px; margin-bottom: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            display: flex; justify-content: space-between; align-items: flex-start;
+        }
+
+        h1 { margin: 0 0 8px 0; font-size: 24px; font-weight: 700; letter-spacing: -0.02em; }
+        .meta { color: var(--text-muted); font-size: 14px; }
+
+        .lesson-card {
+            background: var(--bg-main); border: 1px solid var(--border); border-radius: 12px;
+            padding: 24px; margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+        }
+
+        .lesson-date { font-size: 18px; font-weight: 700; margin-bottom: 4px; color: var(--text-main); letter-spacing: -0.01em; }
+        .lesson-topic { font-size: 13px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 16px; }
+        
+        .pill { display: inline-flex; align-items: center; gap: 4px; padding: 4px 8px; border-radius: 4px; font-weight: 500; font-size: 12px; margin-right: 6px; margin-bottom: 6px;}
+        .pill.strength { background: var(--tag-green-bg); color: var(--tag-green-text); }
+        .pill.weakness { background: var(--tag-red-bg); color: var(--tag-red-text); }
+        .pill.gray { background: var(--tag-gray-bg); color: var(--tag-gray-text); }
+
+        .update-box {
+            background: #fbfbfc; border: 1px solid var(--border); border-radius: 8px;
+            padding: 16px; margin-top: 16px; font-size: 14px; line-height: 1.5;
+        }
+        .update-label { font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text-muted); margin-bottom: 8px; letter-spacing: 0.5px; }
+
+        .hw-section { margin-top: 16px; border-top: 1px solid var(--border); padding-top: 16px; font-size: 14px; line-height: 1.5;}
+    </style>
+</head>
+<body>
+
+    <div class="container" id="app-container">
+        <div style="text-align: center; color: var(--text-muted); margin-top: 50px;">Loading student portal...</div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        const supabaseUrl = 'https://jpjtsvsxdwwwknwggblo.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpwanRzdnN4ZHd3d2tud2dnYmxvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIzNzMyNjAsImV4cCI6MjA5Nzk0OTI2MH0.7zobBlNHYyMPUhW-Ps_SbEbtdh_Nxe9kM6FvvwVS-vE';
+        const client = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+        function escapeHtml(value) {
+            return String(value)
+                .replaceAll('&', '&amp;')
+                .replaceAll('<', '&lt;')
+                .replaceAll('>', '&gt;')
+                .replaceAll('"', '&quot;')
+                .replaceAll("'", '&#039;');
+        }
+
+        async function initPortal() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const studentId = urlParams.get('id');
+            const container = document.getElementById('app-container');
+
+            if (!studentId) {
+                container.innerHTML = '<div style="text-align: center; color: red; margin-top: 50px;">Invalid or missing student link.</div>';
+                return;
+            }
+
+            // Fetch Student Info & Balance
+            const { data: student, error: studentError } = await client.from('students').select('*').eq('id', studentId).single();
+            
+            if (studentError || !student) {
+                container.innerHTML = '<div style="text-align: center; color: red; margin-top: 50px;">Could not find this student.</div>';
+                return;
+            }
+
+            const bal = student.lesson_balance || 0;
+            const balColor = bal < 0 ? 'var(--tag-red-text)' : 'var(--tag-green-text)';
+            const balBg = bal < 0 ? 'var(--tag-red-bg)' : 'var(--tag-green-bg)';
+            const balBorder = bal < 0 ? '#fad1cb' : '#dce6da';
+
+            let html = `
+                <div class="header-card">
+                    <div>
+                        <h1>${student.name}</h1>
+                        <div class="meta">${student.subject || 'Tutoring'} ${student.goal ? ` | ${student.goal}` : ''}</div>
+                    </div>
+                    <div style="background: ${balBg}; color: ${balColor}; border: 1px solid ${balBorder}; padding: 8px 16px; border-radius: 8px; text-align: center;">
+                        <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Account Balance</div>
+                        <div style="font-size: 20px; font-weight: 700;">£${bal}</div>
+                    </div>
+                </div>
+                <h2 style="font-size: 16px; font-weight: 600; margin-bottom: 16px; color: var(--text-main);">Recent Lessons</h2>
+            `;
+
+            // Fetch Read-Only Lessons
+            const { data: lessons, error: lessonsError } = await client
+                .from('lessons')
+                .select('lesson_date, metrics, parent_update')
+                .eq('student_id', studentId)
+                .order('lesson_date', { ascending: false });
+
+            if (!lessons || lessons.length === 0) {
+                html += `<div style="text-align: center; color: var(--text-muted); padding: 40px;">No lessons logged yet.</div>`;
+            } else {
+                lessons.forEach(lesson => {
+                    const metrics = lesson.metrics || {};
+                    const formattedDate = new Date(lesson.lesson_date).toLocaleDateString('en-GB', { month: 'long', day: 'numeric', year: 'numeric' });
+                    const displayTitle = metrics.lesson_title ? metrics.lesson_title.toUpperCase() : 'LESSON LOG';
+
+                    let pillsHtml = '';
+                    if (metrics.covered_today) metrics.covered_today.forEach(t => pillsHtml += `<span class="pill gray">${t}</span>`);
+                    if (metrics.scores_or_results) metrics.scores_or_results.forEach(s => pillsHtml += `<span class="pill strength">🎯 ${s.label}: <strong>${s.score}</strong></span>`);
+
+                    let bulletsHtml = '';
+                    if (metrics.lesson_summary_bullets && metrics.lesson_summary_bullets.length > 0) {
+                        bulletsHtml = `<ul style="padding-left: 18px; margin: 12px 0 0 0; color: var(--text-main); font-weight: 500;">
+                            ${metrics.lesson_summary_bullets.map(b => `<li style="margin-bottom: 4px;">${b}</li>`).join('')}
+                        </ul>`;
+                    }
+
+                    let hwHtml = '';
+                    const homework = Array.isArray(metrics.homework) ? metrics.homework.filter(Boolean) : [];
+                    const nextSteps = Array.isArray(metrics.next_lesson_notes) ? metrics.next_lesson_notes.filter(Boolean) : [];
+
+                    if (homework.length > 0 || nextSteps.length > 0) {
+                        hwHtml = `<div class="hw-section">`;
+                        if (homework.length > 0) {
+                            hwHtml += `<div style="margin-bottom: 8px;"><strong>Homework:</strong><br><span style="color: var(--text-muted);">${homework.map(h => escapeHtml(h)).join('<br>')}</span></div>`;
+                        }
+                        if (nextSteps.length > 0) {
+                            hwHtml += `<div><strong>Next Lesson:</strong><br><span style="color: var(--text-muted);">${nextSteps.map(n => escapeHtml(n)).join('<br>')}</span></div>`;
+                        }
+                        hwHtml += `</div>`;
+                    }
+
+                    let parentUpdateHtml = '';
+                    if (lesson.parent_update) {
+                        parentUpdateHtml = `
+                            <div class="update-box">
+                                <div class="update-label">Tutor Note</div>
+                                <div>${lesson.parent_update}</div>
+                            </div>
+                        `;
+                    }
+
+                    html += `
+                        <div class="lesson-card">
+                            <div class="lesson-date">${formattedDate}</div>
+                            <div class="lesson-topic">${displayTitle}</div>
+                            <div>${pillsHtml}</div>
+                            ${bulletsHtml}
+                            ${hwHtml}
+                            ${parentUpdateHtml}
+                        </div>
+                    `;
+                });
+            }
+
+            container.innerHTML = html;
+        }
+
+        window.addEventListener('DOMContentLoaded', initPortal);
+    </script>
+</body>
+</html>
