@@ -175,7 +175,7 @@
         .notion-table { border-top: 1px solid var(--border); font-size: 14px; border-bottom: 1px solid var(--border); }
         .notion-row { display: grid; grid-template-columns: minmax(220px, 1.5fr) 120px minmax(280px, 3fr) 80px; border-bottom: 1px solid var(--border); transition: background 0.1s; }
         .notion-row.todo-layout { grid-template-columns: minmax(300px, 3fr) 140px 140px 140px; }
-        .notion-row.payment-layout { grid-template-columns: 120px 200px 100px minmax(200px, 1fr); }
+        .notion-row.payment-layout { grid-template-columns: 120px 200px 100px minmax(200px, 1fr) 40px; }
         
         .notion-row:last-child { border-bottom: none; }
         .notion-row:not(.header):hover { background: var(--bg-hover); }
@@ -418,7 +418,7 @@
                 <div class="notion-cell"><span>👤</span> Student</div>
                 <div class="notion-cell"><span>💷</span> Amount</div>
                 <div class="notion-cell"><span>📝</span> Details</div>
-            </div>
+                <div class="notion-cell"></div> </div>
             <div id="payments-list">
                 <div style="padding: 20px; text-align: center; color: var(--text-muted);">Loading ledger...</div>
             </div>
@@ -1208,15 +1208,51 @@
                 const amountBg = isDeduction ? 'var(--tag-red-bg)' : 'var(--tag-green-bg)';
                 
                 html += `
-                    <div class="notion-row payment-layout">
+                    <div class="notion-row payment-layout" id="payment-row-${p.id}">
                         <div class="notion-cell" style="color: var(--text-muted); font-size: 13px;">${new Date(p.payment_date).toLocaleDateString()}</div>
                         <div class="notion-cell" style="font-weight: 500;">${studentName}</div>
                         <div class="notion-cell"><span class="pill" style="background: ${amountBg}; color: ${amountColor};">£${p.amount}</span></div>
                         <div class="notion-cell" style="color: var(--text-muted); font-size: 13px;">${p.method} ${p.note ? ` - ${p.note}` : ''}</div>
+                        <div class="notion-cell" style="justify-content: center; padding: 0;">
+                            <button class="edit-btn-small" style="padding: 4px; font-size: 14px;" onclick="deletePayment('${p.id}', ${p.amount}, '${p.student_id}')" title="Delete Record">🗑️</button>
+                        </div>
                     </div>
                 `;
             });
             container.innerHTML = html;
+        };
+
+        // Safely Deletes a Payment & Reverses the Math!
+        window.deletePayment = async function(paymentId, amount, studentId) {
+            if (!confirm("Delete this record? The student's balance will be automatically reversed.")) return;
+            
+            // Visually fade it out instantly
+            document.getElementById(`payment-row-${paymentId}`).style.opacity = '0.3';
+
+            // 1. Delete from ledger
+            const { error: deleteError } = await client.from('payments').delete().eq('id', paymentId);
+            if (deleteError) return alert("Error deleting payment: " + deleteError.message);
+
+            // 2. Fetch the student's CURRENT balance
+            const { data: student, error: studentError } = await client.from('students').select('lesson_balance').eq('id', studentId).single();
+            
+            if (!studentError && student) {
+                const currentBalance = student.lesson_balance || 0;
+                // REVERSE THE MATH: If we delete a +200 payment, we subtract 200. If we delete a -50 deduction, we add 50!
+                const newBalance = currentBalance - amount; 
+                
+                // Save fixed balance
+                await client.from('students').update({ lesson_balance: newBalance }).eq('id', studentId);
+
+                // If this happens to be the student currently open on the dashboard, fix the UI pill behind the scenes
+                if (activeStudentId === studentId) {
+                    activeStudent.lesson_balance = newBalance;
+                    document.getElementById('active-student-balance').innerText = newBalance;
+                }
+            }
+
+            // 3. Reload Ledger
+            loadPayments();
         };
 
     </script>
