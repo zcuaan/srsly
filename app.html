@@ -175,6 +175,7 @@
         .notion-table { border-top: 1px solid var(--border); font-size: 14px; border-bottom: 1px solid var(--border); }
         .notion-row { display: grid; grid-template-columns: minmax(220px, 1.5fr) 120px minmax(280px, 3fr) 80px; border-bottom: 1px solid var(--border); transition: background 0.1s; }
         .notion-row.todo-layout { grid-template-columns: minmax(300px, 3fr) 140px 140px 140px; }
+        .notion-row.payment-layout { grid-template-columns: 120px 200px 100px minmax(200px, 1fr); }
         
         .notion-row:last-child { border-bottom: none; }
         .notion-row:not(.header):hover { background: var(--bg-hover); }
@@ -272,6 +273,35 @@
         </div>
     </div>
 
+    <div id="payment-modal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <h2 style="margin-top: 0; font-size: 20px;">💸 Log Payment</h2>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+                <div>
+                    <label class="modal-label" style="margin-top: 0;">Amount (£)</label>
+                    <input type="number" id="payment-amount" class="modal-input" placeholder="e.g. 200 or -50">
+                </div>
+                <div>
+                    <label class="modal-label" style="margin-top: 0;">Method</label>
+                    <select id="payment-method" class="modal-input">
+                        <option value="Bank Transfer">Bank Transfer</option>
+                        <option value="Cash">Cash</option>
+                        <option value="Adjustment">Manual Adjustment</option>
+                    </select>
+                </div>
+            </div>
+            
+            <label class="modal-label">Note (Optional)</label>
+            <input type="text" id="payment-note" class="modal-input" placeholder="e.g. Paid for block of 5 lessons">
+            
+            <div class="modal-actions">
+                <button type="button" style="background: transparent; border: none; cursor: pointer; font-weight: 600;" onclick="closePaymentModal()">Cancel</button>
+                <button type="button" class="primary" style="width: auto;" onclick="savePayment()">Save Payment</button>
+            </div>
+        </div>
+    </div>
+
     <div class="sidebar">
         <div style="display: flex; flex-direction: column; flex: 1;">
             <div class="logo">🦀 Tutor Log</div>
@@ -280,6 +310,7 @@
             <div class="section-title">Workspace</div>
             <ul class="student-list" style="margin-bottom: 16px;">
                 <li class="student-item" id="nav-todos" onclick="switchView('todos')">📌 To-do list</li>
+                <li class="student-item" id="nav-payments" onclick="switchView('payments')">💸 Payments Ledger</li>
             </ul>
 
             <div class="section-title">My Students</div>
@@ -316,10 +347,9 @@
                     </div>
                     
                     <div id="balance-pill" style="display: flex; align-items: center; gap: 8px; background: var(--tag-green-bg); color: var(--tag-green-text); padding: 4px 10px; border-radius: 6px; width: fit-content; border: 1px solid #dce6da; transition: all 0.2s;">
-                        <strong>Prepaid Lessons:</strong> 
-                        <span id="active-student-balance" style="font-weight: 700; font-size: 15px; width: 20px; text-align: center;">0</span>
-                        <button class="edit-btn-small" style="background: white; border: 1px solid #dce6da; padding: 2px 6px;" onclick="updateBalance(-1)">-1</button>
-                        <button class="edit-btn-small" style="background: white; border: 1px solid #dce6da; padding: 2px 6px;" onclick="updateBalance(1)">+1</button>
+                        <strong>Balance:</strong> 
+                        <span style="font-weight: 700; font-size: 15px;">£<span id="active-student-balance">0</span></span>
+                        <button class="edit-btn-small" style="background: white; border: 1px solid #dce6da; padding: 2px 6px; margin-left: 4px;" onclick="openPaymentModal()">+ 💸 Log Payment</button>
                     </div>
                 </div>
             </div>
@@ -330,14 +360,13 @@
         </div>
 
         <div class="workspace">
-    <div class="col-left">
-        <div class="card">
-            <h2 class="hero-title">📝 What happened today?</h2>
-            <textarea id="lesson-raw-input" placeholder="Type a quick lesson note — topics covered, scores, homework, parent reminders..."></textarea>
-            
-            <button id="save-note-btn" class="primary" onclick="processLessonNote()">Save & create update</button>
-            
-        </div>
+            <div class="col-left">
+                <div class="card">
+                    <h2 class="hero-title">📝 What happened today?</h2>
+                    <textarea id="lesson-raw-input" placeholder="Type a quick lesson note — topics covered, scores, homework, parent reminders..."></textarea>
+                    
+                    <button id="save-note-btn" class="primary" onclick="processLessonNote()">Save & create update</button>
+                </div>
 
                 <div class="card">
                     <h2>🧠 Memory Snapshot</h2>
@@ -365,7 +394,7 @@
                 <div class="header-meta">Manage tasks and reminders across all your students.</div>
             </div>
         </div>
-        <div class="notion-table">
+        <div class="notion-table" id="todos-table">
             <div class="notion-row header todo-layout">
                 <div class="notion-cell"><span>📌</span> Task</div>
                 <div class="notion-cell"><span>👤</span> Student</div>
@@ -373,6 +402,26 @@
                 <div class="notion-cell"><span>⏰</span> Due</div>
             </div>
             <div style="padding: 20px; text-align: center; color: var(--text-muted);">To-do auto-saving to your database is ready to be linked!</div>
+        </div>
+    </div>
+
+    <div class="main-content hidden" id="view-payments">
+        <div class="header" style="margin-bottom: 40px;">
+            <div>
+                <h1>💸 Payments Ledger</h1>
+                <div class="header-meta">Track all payments and automatic deductions.</div>
+            </div>
+        </div>
+        <div class="notion-table" id="payments-table">
+            <div class="notion-row header payment-layout">
+                <div class="notion-cell"><span>📅</span> Date</div>
+                <div class="notion-cell"><span>👤</span> Student</div>
+                <div class="notion-cell"><span>💷</span> Amount</div>
+                <div class="notion-cell"><span>📝</span> Details</div>
+            </div>
+            <div id="payments-list">
+                <div style="padding: 20px; text-align: center; color: var(--text-muted);">Loading ledger...</div>
+            </div>
         </div>
     </div>
 
@@ -456,6 +505,17 @@
             }
         };
 
+        // PAYMENT MODAL CONTROLS
+        window.openPaymentModal = function() {
+            document.getElementById('payment-amount').value = '';
+            document.getElementById('payment-note').value = '';
+            document.getElementById('payment-modal').classList.remove('hidden');
+        };
+
+        window.closePaymentModal = function() {
+            document.getElementById('payment-modal').classList.add('hidden');
+        };
+
         // Instantly updates the prepaid lesson counter and saves to Supabase
         window.updateBalance = async function(changeAmount) {
             if (!activeStudentId) return;
@@ -485,6 +545,45 @@
                 .eq('id', activeStudentId);
 
             if (error) alert("Error saving balance: " + error.message);
+        };
+
+        // Logs a new payment to the Ledger and updates the balance
+        window.savePayment = async function() {
+            const amount = parseInt(document.getElementById('payment-amount').value);
+            const method = document.getElementById('payment-method').value;
+            const note = document.getElementById('payment-note').value;
+
+            if (!amount || isNaN(amount)) return alert('Please enter a valid amount.');
+
+            const btn = document.querySelector('#payment-modal .primary');
+            btn.innerText = 'Saving...';
+
+            // Insert into payments ledger
+            const { error: ledgerError } = await client.from('payments').insert([{
+                tutor_id: currentUser.id,
+                student_id: activeStudentId,
+                amount: amount,
+                method: method,
+                note: note,
+                payment_date: new Date().toISOString().split('T')[0]
+            }]);
+
+            if (ledgerError) {
+                alert("Error saving payment: " + ledgerError.message);
+                btn.innerText = 'Save Payment';
+                return;
+            }
+
+            // Update student balance
+            await updateBalance(amount);
+
+            closePaymentModal();
+            btn.innerText = 'Save Payment';
+            
+            // If the payments tab is open in the background, refresh it!
+            if (!document.getElementById('view-payments').classList.contains('hidden')) {
+                loadPayments();
+            }
         };
 
         // Toggle between Login and Sign Up UI modes
@@ -703,14 +802,20 @@
 
         // View Layout Swapping Engine
         window.switchView = function(viewName) {
-            const views = ['view-student', 'view-settings', 'view-resources', 'view-todos'];
+            const views = ['view-student', 'view-settings', 'view-resources', 'view-todos', 'view-payments'];
             views.forEach(v => document.getElementById(v)?.classList.add('hidden'));
 
             document.getElementById('view-' + viewName)?.classList.remove('hidden');
             document.querySelectorAll('.student-item').forEach(n => n.classList.remove('active'));
 
-            if (viewName === 'todos') loadTodos();
-            if (viewName === 'todos') document.getElementById('nav-todos').classList.add('active');
+            if (viewName === 'todos') {
+                loadTodos();
+                document.getElementById('nav-todos').classList.add('active');
+            }
+            if (viewName === 'payments') {
+                loadPayments();
+                document.getElementById('nav-payments').classList.add('active');
+            }
             if (viewName === 'resources') document.getElementById('nav-resources').classList.add('active');
             if (viewName === 'settings') document.getElementById('nav-settings').classList.add('active');
         };
@@ -992,6 +1097,25 @@
                 
                 // Reload the timeline dynamically without alerting!
                 await loadTimeline();
+                
+                // If they have a session rate set, the balance was updated by the AI backend! So we must refresh it locally.
+                if (activeStudent.session_rate > 0) {
+                     const { data: refreshedStudent } = await client.from('students').select('lesson_balance').eq('id', activeStudentId).single();
+                     if (refreshedStudent) {
+                         activeStudent.lesson_balance = refreshedStudent.lesson_balance;
+                         const balPill = document.getElementById('balance-pill');
+                         document.getElementById('active-student-balance').innerText = refreshedStudent.lesson_balance;
+                         if (refreshedStudent.lesson_balance < 0) {
+                            balPill.style.background = 'var(--tag-red-bg)';
+                            balPill.style.color = 'var(--tag-red-text)';
+                            balPill.style.borderColor = '#fad1cb';
+                        } else {
+                            balPill.style.background = 'var(--tag-green-bg)';
+                            balPill.style.color = 'var(--tag-green-text)';
+                            balPill.style.borderColor = '#dce6da';
+                        }
+                     }
+                }
 
             } catch (err) {
                 alert("Error: " + err.message);
@@ -1054,6 +1178,47 @@
             await client.from('todos').update({ is_completed: true }).eq('id', todoId);
             setTimeout(loadTodos, 500); // Refresh the list
         };
+
+        // Load the Global Payments Ledger
+        window.loadPayments = async function() {
+            const container = document.getElementById('payments-list');
+            container.innerHTML = '<div style="padding: 20px; text-align: center; color: var(--text-muted);">Loading ledger...</div>';
+
+            const { data: payments, error } = await client
+                .from('payments')
+                .select('*, students(name)')
+                .eq('tutor_id', currentUser.id)
+                .order('created_at', { ascending: false });
+
+            if (error) {
+                container.innerHTML = `<div style="color: red; padding: 20px;">Error loading ledger.</div>`;
+                return console.error(error);
+            }
+
+            if (payments.length === 0) {
+                container.innerHTML = `<div style="padding: 20px; text-align: center; color: var(--text-muted);">No payments logged yet.</div>`;
+                return;
+            }
+
+            let html = '';
+            payments.forEach(p => {
+                const studentName = p.students ? p.students.name : 'Unknown';
+                const isDeduction = p.amount < 0;
+                const amountColor = isDeduction ? 'var(--tag-red-text)' : 'var(--tag-green-text)';
+                const amountBg = isDeduction ? 'var(--tag-red-bg)' : 'var(--tag-green-bg)';
+                
+                html += `
+                    <div class="notion-row payment-layout">
+                        <div class="notion-cell" style="color: var(--text-muted); font-size: 13px;">${new Date(p.payment_date).toLocaleDateString()}</div>
+                        <div class="notion-cell" style="font-weight: 500;">${studentName}</div>
+                        <div class="notion-cell"><span class="pill" style="background: ${amountBg}; color: ${amountColor};">£${p.amount}</span></div>
+                        <div class="notion-cell" style="color: var(--text-muted); font-size: 13px;">${p.method} ${p.note ? ` - ${p.note}` : ''}</div>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        };
+
     </script>
 </body>
 </html>
