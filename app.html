@@ -166,7 +166,7 @@
         .btn-copy { background: white; border: 1px solid var(--callout-green-border); color: var(--callout-green-text); padding: 6px 10px; border-radius: 4px; font-size: 12px; cursor: pointer; font-weight: 600; transition: all 0.2s;}
         .btn-copy:hover { background: #e3ede1; }
         
-        .edit-btn-small { background: none; border: 1px solid transparent; color: var(--text-muted); cursor: pointer; font-size: 12px; font-weight: 600; padding: 4px 8px; border-radius: 4px; }
+        .edit-btn-small { background: none; border: 1px solid transparent; color: var(--text-muted); cursor: pointer; font-size: 12px; font-weight: 600; padding: 4px 8px; border-radius: 4px; transition: all 0.2s; }
         .edit-btn-small:hover { background: #e0e0e0; border-color: var(--border); color: var(--text-main); }
         
         .notion-group { margin-bottom: 40px; }
@@ -273,19 +273,23 @@
         </div>
     </div>
 
-    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+    <div id="payment-modal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <h2 style="margin-top: 0; font-size: 20px;">💸 Log Payment</h2>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-bottom: 16px;">
                 <div>
                     <label class="modal-label" style="margin-top: 0;">Date</label>
                     <input type="date" id="payment-date" class="modal-input">
                 </div>
                 <div>
                     <label class="modal-label" style="margin-top: 0;">Amount (£)</label>
-                    <input type="number" id="payment-amount" class="modal-input" placeholder="e.g. 200">
+                    <input type="number" id="payment-amount" class="modal-input" placeholder="e.g. 200 or -50">
                 </div>
                 <div>
                     <label class="modal-label" style="margin-top: 0;">Method</label>
                     <select id="payment-method" class="modal-input">
-                        <option value="Bank Transfer">Bank</option>
+                        <option value="Bank Transfer">Bank Transfer</option>
                         <option value="Cash">Cash</option>
                         <option value="Adjustment">Adjustment</option>
                     </select>
@@ -418,7 +422,8 @@
                 <div class="notion-cell"><span>👤</span> Student</div>
                 <div class="notion-cell"><span>💷</span> Amount</div>
                 <div class="notion-cell"><span>📝</span> Details</div>
-                <div class="notion-cell"></div> </div>
+                <div class="notion-cell"></div>
+            </div>
             <div id="payments-list">
                 <div style="padding: 20px; text-align: center; color: var(--text-muted);">Loading ledger...</div>
             </div>
@@ -509,7 +514,6 @@
         window.openPaymentModal = function() {
             document.getElementById('payment-amount').value = '';
             document.getElementById('payment-note').value = '';
-            // Automatically fill in today's date!
             document.getElementById('payment-date').value = new Date().toISOString().split('T')[0];
             document.getElementById('payment-modal').classList.remove('hidden');
         };
@@ -525,11 +529,9 @@
             const currentBalance = activeStudent.lesson_balance || 0;
             const newBalance = currentBalance + changeAmount;
             
-            // Update UI instantly
             document.getElementById('active-student-balance').innerText = newBalance;
             activeStudent.lesson_balance = newBalance; 
 
-            // Handle color switch
             const balPill = document.getElementById('balance-pill');
             if (newBalance < 0) {
                 balPill.style.background = 'var(--tag-red-bg)';
@@ -541,11 +543,7 @@
                 balPill.style.borderColor = '#dce6da';
             }
 
-            // Save to DB in the background
-            const { error } = await client.from('students')
-                .update({ lesson_balance: newBalance })
-                .eq('id', activeStudentId);
-
+            const { error } = await client.from('students').update({ lesson_balance: newBalance }).eq('id', activeStudentId);
             if (error) alert("Error saving balance: " + error.message);
         };
 
@@ -554,24 +552,21 @@
             const amount = parseInt(document.getElementById('payment-amount').value);
             const method = document.getElementById('payment-method').value;
             const note = document.getElementById('payment-note').value;
-            const paymentDate = document.getElementById('payment-date').value; // NEW!
+            const paymentDate = document.getElementById('payment-date').value;
 
             if (!amount || isNaN(amount)) return alert('Please enter a valid amount.');
 
             const btn = document.querySelector('#payment-modal .primary');
             btn.innerText = 'Saving...';
 
-            // Insert into payments ledger
             const { error: ledgerError } = await client.from('payments').insert([{
                 tutor_id: currentUser.id,
                 student_id: activeStudentId,
                 amount: amount,
                 method: method,
                 note: note,
-                payment_date: paymentDate // NEW: Uses your selected date!
+                payment_date: paymentDate
             }]);
-            
-            // ... (rest of the function stays exactly the same)
 
             if (ledgerError) {
                 alert("Error saving payment: " + ledgerError.message);
@@ -579,16 +574,51 @@
                 return;
             }
 
-            // Update student balance
             await updateBalance(amount);
 
             closePaymentModal();
             btn.innerText = 'Save Payment';
             
-            // If the payments tab is open in the background, refresh it!
             if (!document.getElementById('view-payments').classList.contains('hidden')) {
                 loadPayments();
             }
+        };
+
+        // Safely Deletes a Payment & Reverses the Math!
+        window.deletePayment = async function(paymentId, amount, studentId) {
+            if (!confirm("Delete this record? The student's balance will be automatically reversed.")) return;
+            
+            document.getElementById(`payment-row-${paymentId}`).style.opacity = '0.3';
+
+            const { error: deleteError } = await client.from('payments').delete().eq('id', paymentId);
+            if (deleteError) return alert("Error deleting payment: " + deleteError.message);
+
+            const { data: student, error: studentError } = await client.from('students').select('lesson_balance').eq('id', studentId).single();
+            
+            if (!studentError && student) {
+                const currentBalance = student.lesson_balance || 0;
+                const newBalance = currentBalance - amount; 
+                
+                await client.from('students').update({ lesson_balance: newBalance }).eq('id', studentId);
+
+                if (activeStudentId === studentId) {
+                    activeStudent.lesson_balance = newBalance;
+                    document.getElementById('active-student-balance').innerText = newBalance;
+                    
+                    const balPill = document.getElementById('balance-pill');
+                    if (newBalance < 0) {
+                        balPill.style.background = 'var(--tag-red-bg)';
+                        balPill.style.color = 'var(--tag-red-text)';
+                        balPill.style.borderColor = '#fad1cb';
+                    } else {
+                        balPill.style.background = 'var(--tag-green-bg)';
+                        balPill.style.color = 'var(--tag-green-text)';
+                        balPill.style.borderColor = '#dce6da';
+                    }
+                }
+            }
+
+            loadPayments();
         };
 
         // Toggle between Login and Sign Up UI modes
@@ -611,14 +641,11 @@
             btn.innerText = "Processing...";
 
             if (isSignUpMode) {
-                // SIGN UP LOGIC
                 const { data, error } = await client.auth.signUp({ email, password });
-                
                 if (error) { 
                     alert("Sign up error: " + error.message); 
                     btn.innerText = "Sign Up"; 
                 } else if (data.session) {
-                    // Instantly log in if confirm email is off
                     handleUserAuthenticated(data.user);
                 } else {
                     alert("Sign up successful! You can log in now."); 
@@ -626,9 +653,7 @@
                     btn.innerText = "Log In"; 
                 }
             } else {
-                // LOG IN LOGIC
                 const { data, error } = await client.auth.signInWithPassword({ email, password });
-                
                 if (error) { 
                     alert("Log in error: " + error.message); 
                     btn.innerText = "Log In"; 
@@ -644,7 +669,7 @@
             document.getElementById('auth-screen').classList.add('hidden');
             loadStudents();
             loadTodos();
-            switchView('todos'); // Default view on landing
+            switchView('todos'); 
         };
 
         // Sign Out
@@ -684,9 +709,8 @@
         // Select and view a specific student
         window.selectStudent = function(student) {
             activeStudentId = student.id;
-            activeStudent = student; // Store full object for editing
+            activeStudent = student; 
             
-            // Manage UI states
             document.querySelectorAll('.student-item').forEach(el => el.classList.remove('active'));
             document.getElementById(`nav-student-${student.id}`).classList.add('active');
 
@@ -696,12 +720,10 @@
             document.getElementById('active-student-subject').innerText = student.subject || '-';
             document.getElementById('active-student-goal').innerText = student.goal || '-';
             
-            // Load Balance
             const bal = student.lesson_balance || 0;
             const balPill = document.getElementById('balance-pill');
             document.getElementById('active-student-balance').innerText = bal;
             
-            // Turn Red if in Arrears!
             if (bal < 0) {
                 balPill.style.background = 'var(--tag-red-bg)';
                 balPill.style.color = 'var(--tag-red-text)';
@@ -722,7 +744,6 @@
             document.querySelector('.modal-content h2').innerText = "➕ Add New Student";
             document.getElementById('confirm-add-student-btn').innerText = "Save Student";
             
-            // Clear inputs
             document.querySelectorAll('.modal-input').forEach(i => i.value = '');
             document.getElementById('add-student-modal').classList.remove('hidden'); 
         };
@@ -739,7 +760,7 @@
             inputs[1].value = activeStudent.year_group || '';
             inputs[2].value = activeStudent.subject || '';
             inputs[3].value = activeStudent.goal || '';
-            inputs[4].value = activeStudent.session_rate || ''; // NEW: Session Rate
+            inputs[4].value = activeStudent.session_rate || '';
             inputs[5].value = activeStudent.parent_contact || '';
             inputs[6].value = activeStudent.tracking_rules || '';
             
@@ -758,11 +779,10 @@
             let yearGroup = inputs[1].value.trim();
             const subject = inputs[2].value;
             const goal = inputs[3].value;
-            const sessionRate = parseInt(inputs[4].value) || 0; // NEW: Session Rate
+            const sessionRate = parseInt(inputs[4].value) || 0; 
             const parentContact = inputs[5].value;
             const trackingRules = inputs[6].value;
 
-            // --- SMART FORMATTING ---
             if (/^\d/.test(yearGroup)) {
                 yearGroup = 'Year ' + yearGroup;
             }
@@ -771,13 +791,11 @@
 
             let error;
             if (isEditing) {
-                // UPDATE existing record
                 const { error: updateError } = await client.from('students')
                     .update({ name, year_group: yearGroup, subject, goal, session_rate: sessionRate, parent_contact: parentContact, tracking_rules: trackingRules })
                     .eq('id', activeStudentId);
                 error = updateError;
             } else {
-                // INSERT new record
                 const { error: insertError } = await client.from('students')
                     .insert([{ tutor_id: currentUser.id, name, year_group: yearGroup, subject, goal, session_rate: sessionRate, parent_contact: parentContact, tracking_rules: trackingRules }]);
                 error = insertError;
@@ -787,23 +805,18 @@
                 alert("Error saving student: " + error.message);
             } else {
                 closeModal();
-                loadStudents(); // Refresh sidebar list
+                loadStudents(); 
                 
-                // If editing, instantly update the dashboard text without reloading
                 if (isEditing) {
                     const yearText = yearGroup ? ` (${yearGroup})` : '';
                     document.getElementById('active-student-name').innerText = `${name}${yearText}`;
                     document.getElementById('active-student-subject').innerText = subject || '-';
                     document.getElementById('active-student-goal').innerText = goal || '-';
                     
-                    // Update our stored object
                     activeStudent = { ...activeStudent, name, year_group: yearGroup, subject, goal, session_rate: sessionRate, parent_contact: parentContact, tracking_rules: trackingRules };
                 }
             }
         };
-
-        // Bind the save student button
-        document.getElementById('confirm-add-student-btn').onclick = saveStudent;
 
         // View Layout Swapping Engine
         window.switchView = function(viewName) {
@@ -854,15 +867,36 @@
                 container.querySelector('.view-state').classList.remove('hidden');
             }
         };
-        window.markSent = function(btnId) {
-            const btn = document.getElementById(btnId);
-            btn.innerHTML = '✅ Sent';
-            btn.style.backgroundColor = '#dcfce7';
-            btn.style.color = '#166534';
-            btn.style.borderColor = '#bbf7d0';
+
+        // Updates a lesson's date or raw note text
+        window.updateLesson = async function(lessonId) {
+            const newDate = document.getElementById(`edit-date-${lessonId}`).value;
+            const newNote = document.getElementById(`edit-note-${lessonId}`).value;
+
+            if (!newDate) return alert("Date cannot be empty.");
+
+            const { error } = await client.from('lessons')
+                .update({ lesson_date: newDate, raw_note: newNote })
+                .eq('id', lessonId);
+
+            if (error) {
+                alert("Error updating lesson: " + error.message);
+            } else {
+                loadTimeline(); // Refresh to re-sort the dates automatically
+            }
         };
-        window.toggleMiniTodo = function() {
-            document.getElementById('mini-todo-form').classList.toggle('hidden');
+
+        // Deletes a lesson note permanently
+        window.deleteLesson = async function(lessonId) {
+            if (!confirm("Are you sure you want to permanently delete this lesson log?")) return;
+            
+            const { error } = await client.from('lessons').delete().eq('id', lessonId);
+            
+            if (error) {
+                alert("Error deleting lesson: " + error.message);
+            } else {
+                loadTimeline();
+            }
         };
 
         // Helper to safely join arrays or display strings for legacy compatibility
@@ -903,7 +937,6 @@
                 snapshotWarning.classList.add('hidden');
                 const latestSnapshot = lessons[0].snapshot_data || {};
                 
-                // Safely render snapshot items (avoids crashing on legacy strings!)
                 let snapshotHtml = '';
                 if (latestSnapshot.progress_notes && latestSnapshot.progress_notes.length > 0) {
                     snapshotHtml += `<li style="margin-bottom: 8px;"><strong>📈 Progress:</strong> <span style="color: var(--text-muted);">${safeJoin(latestSnapshot.progress_notes)}</span></li>`;
@@ -911,7 +944,6 @@
                 if (latestSnapshot.recurring_patterns && latestSnapshot.recurring_patterns.length > 0) {
                     snapshotHtml += `<li style="margin-bottom: 8px;"><strong>⚠️ Recurring:</strong> <span style="color: var(--text-muted);">${safeJoin(latestSnapshot.recurring_patterns)}</span></li>`;
                 } else if (latestSnapshot.recurring_issues && latestSnapshot.recurring_issues.length > 0) {
-                    // Fallback for the very first legacy prompt
                     snapshotHtml += `<li style="margin-bottom: 8px;"><strong>⚠️ Recurring:</strong> <span style="color: var(--text-muted);">${safeJoin(latestSnapshot.recurring_issues)}</span></li>`;
                 }
                 if (latestSnapshot.admin_notes && latestSnapshot.admin_notes.length > 0) {
@@ -960,7 +992,6 @@
                         ${metrics.lesson_summary_bullets.map(b => `<li style="margin-bottom: 4px;">${b}</li>`).join('')}
                     </ul>`;
                 } else if (!metrics.lesson_title) {
-                    // Fallback for legacy notes
                     bulletsHtml = `<div style="color: var(--text-muted); font-style: italic; margin-bottom: 16px;">Legacy note format. Click 'View your note' below.</div>`;
                 }
 
@@ -1081,36 +1112,6 @@
                 container.insertAdjacentHTML('beforeend', cardHtml);
             });
         };
-        // Updates a lesson's date or raw note text
-        window.updateLesson = async function(lessonId) {
-            const newDate = document.getElementById(`edit-date-${lessonId}`).value;
-            const newNote = document.getElementById(`edit-note-${lessonId}`).value;
-
-            if (!newDate) return alert("Date cannot be empty.");
-
-            const { error } = await client.from('lessons')
-                .update({ lesson_date: newDate, raw_note: newNote })
-                .eq('id', lessonId);
-
-            if (error) {
-                alert("Error updating lesson: " + error.message);
-            } else {
-                loadTimeline(); // Refresh to re-sort the dates automatically
-            }
-        };
-
-        // Deletes a lesson note permanently
-        window.deleteLesson = async function(lessonId) {
-            if (!confirm("Are you sure you want to permanently delete this lesson log?")) return;
-            
-            const { error } = await client.from('lessons').delete().eq('id', lessonId);
-            
-            if (error) {
-                alert("Error deleting lesson: " + error.message);
-            } else {
-                loadTimeline();
-            }
-        };
 
         // Connects the AI Brain to the Hero Input
         window.processLessonNote = async function() {
@@ -1130,7 +1131,6 @@
                 const { data: { session } } = await client.auth.getSession();
                 if (!session) throw new Error("You are not logged in. Please refresh and log in again.");
 
-                // THE BYPASS REQUEST
                 const response = await fetch(`${supabaseUrl}/functions/v1/swift-handler`, {
                     method: 'POST',
                     headers: {
@@ -1152,13 +1152,10 @@
                     throw new Error(data.error || `Status ${response.status}`);
                 }
 
-                // Clear input and reset UI
                 rawNoteInput.value = '';
                 
-                // Reload the timeline dynamically without alerting!
                 await loadTimeline();
                 
-                // If they have a session rate set, the balance was updated by the AI backend! So we must refresh it locally.
                 if (activeStudent.session_rate > 0) {
                      const { data: refreshedStudent } = await client.from('students').select('lesson_balance').eq('id', activeStudentId).single();
                      if (refreshedStudent) {
@@ -1181,7 +1178,6 @@
                 alert("Error: " + err.message);
                 console.error("RAW ERROR DETAILS:", err);
             } finally {
-                // Reset the button back to normal
                 saveBtn.innerText = "Save & create update";
                 saveBtn.disabled = false;
                 saveBtn.style.opacity = "1";
@@ -1236,7 +1232,7 @@
         window.completeTodo = async function(todoId) {
             document.getElementById(`todo-${todoId}`).style.opacity = '0.4';
             await client.from('todos').update({ is_completed: true }).eq('id', todoId);
-            setTimeout(loadTodos, 500); // Refresh the list
+            setTimeout(loadTodos, 500); 
         };
 
         // Load the Global Payments Ledger
@@ -1248,7 +1244,7 @@
                 .from('payments')
                 .select('*, students(name)')
                 .eq('tutor_id', currentUser.id)
-                .order('payment_date', { ascending: false }); // CHANGED from 'created_at'
+                .order('payment_date', { ascending: false });
 
             if (error) {
                 container.innerHTML = `<div style="color: red; padding: 20px;">Error loading ledger.</div>`;
@@ -1281,40 +1277,6 @@
             });
             container.innerHTML = html;
         };
-
-        // Safely Deletes a Payment & Reverses the Math!
-        window.deletePayment = async function(paymentId, amount, studentId) {
-            if (!confirm("Delete this record? The student's balance will be automatically reversed.")) return;
-            
-            // Visually fade it out instantly
-            document.getElementById(`payment-row-${paymentId}`).style.opacity = '0.3';
-
-            // 1. Delete from ledger
-            const { error: deleteError } = await client.from('payments').delete().eq('id', paymentId);
-            if (deleteError) return alert("Error deleting payment: " + deleteError.message);
-
-            // 2. Fetch the student's CURRENT balance
-            const { data: student, error: studentError } = await client.from('students').select('lesson_balance').eq('id', studentId).single();
-            
-            if (!studentError && student) {
-                const currentBalance = student.lesson_balance || 0;
-                // REVERSE THE MATH: If we delete a +200 payment, we subtract 200. If we delete a -50 deduction, we add 50!
-                const newBalance = currentBalance - amount; 
-                
-                // Save fixed balance
-                await client.from('students').update({ lesson_balance: newBalance }).eq('id', studentId);
-
-                // If this happens to be the student currently open on the dashboard, fix the UI pill behind the scenes
-                if (activeStudentId === studentId) {
-                    activeStudent.lesson_balance = newBalance;
-                    document.getElementById('active-student-balance').innerText = newBalance;
-                }
-            }
-
-            // 3. Reload Ledger
-            loadPayments();
-        };
-
     </script>
 </body>
 </html>
