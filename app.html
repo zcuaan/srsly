@@ -868,51 +868,75 @@
             }
         };
 
-        // Updates a lesson's date/note AND syncs the ledger
+        // Updates a lesson's date/note AND precisely syncs the ledger
         window.updateLesson = async function(lessonId, oldDate) {
             const newDate = document.getElementById(`edit-date-${lessonId}`).value;
             const newNote = document.getElementById(`edit-note-${lessonId}`).value;
 
             if (!newDate) return alert("Date cannot be empty.");
 
-            // 1. Update the lesson timeline
+            // 1. Get the exact title of the lesson BEFORE we update it
+            const { data: lessonData } = await client.from('lessons').select('metrics').eq('id', lessonId).single();
+            const exactTitle = lessonData?.metrics?.lesson_title || "Lesson note";
+            const ledgerNote = `Lesson auto-deduction: ${exactTitle}`;
+
+            // 2. Update the lesson timeline
             const { error: lessonError } = await client.from('lessons')
                 .update({ lesson_date: newDate, raw_note: newNote })
                 .eq('id', lessonId);
 
             if (lessonError) return alert("Error updating lesson: " + lessonError.message);
 
-            // 2. Find the automatic payment deduction and shift its date too!
+            // 3. Find the precise payment deduction and shift its date too!
             if (oldDate !== newDate) {
-                await client.from('payments')
-                    .update({ payment_date: newDate })
+                const { data: payments } = await client.from('payments')
+                    .select('id')
                     .eq('student_id', activeStudentId)
                     .eq('method', 'Auto-Deduct')
-                    .eq('payment_date', oldDate);
+                    .eq('payment_date', oldDate)
+                    .eq('note', ledgerNote) // Pinpoints the EXACT lesson
+                    .limit(1);
+
+                if (payments && payments.length > 0) {
+                    await client.from('payments')
+                        .update({ payment_date: newDate })
+                        .eq('id', payments[0].id);
+                }
             }
 
             loadTimeline(); 
+            
+            // Refresh payments tab if it's open in the background
+            if (!document.getElementById('view-payments').classList.contains('hidden')) {
+                loadPayments();
+            }
         };
 
-        // Deletes a lesson note AND refunds the auto-deduction
+        // Deletes a lesson note AND precisely refunds the auto-deduction
         window.deleteLesson = async function(lessonId, lessonDate) {
             if (!confirm("Permanently delete this lesson? Any automatic payment deduction will be refunded.")) return;
             
-            // 1. Delete the lesson from the timeline
+            // 1. Get the exact title of the lesson BEFORE deleting
+            const { data: lessonData } = await client.from('lessons').select('metrics').eq('id', lessonId).single();
+            const exactTitle = lessonData?.metrics?.lesson_title || "Lesson note";
+            const ledgerNote = `Lesson auto-deduction: ${exactTitle}`;
+
+            // 2. Delete the lesson from the timeline
             const { error } = await client.from('lessons').delete().eq('id', lessonId);
             if (error) return alert("Error deleting lesson: " + error.message);
 
-            // 2. Find the corresponding Auto-Deduct payment to refund it
+            // 3. Find the exact corresponding Auto-Deduct payment to refund it
             const { data: payments } = await client.from('payments')
                 .select('id, amount')
                 .eq('student_id', activeStudentId)
                 .eq('method', 'Auto-Deduct')
                 .eq('payment_date', lessonDate)
+                .eq('note', ledgerNote) // Pinpoints the EXACT lesson
                 .limit(1);
 
             if (payments && payments.length > 0) {
                 const paymentId = payments[0].id;
-                const refundAmount = Math.abs(payments[0].amount); // Flips -50 into a positive +50
+                const refundAmount = Math.abs(payments[0].amount); // Flips -50 into +50
                 
                 // Delete the charge from the ledger
                 await client.from('payments').delete().eq('id', paymentId);
@@ -922,6 +946,9 @@
             }
 
             loadTimeline();
+            if (!document.getElementById('view-payments').classList.contains('hidden')) {
+                loadPayments();
+            }
         };
 
         // Helper to safely join arrays or display strings for legacy compatibility
