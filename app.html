@@ -1015,41 +1015,96 @@
                     hwHtml += `</div>`;
                 }
 
-                // Compile Card
+                // Compile Card with View and Edit States
                 const cardHtml = `
-                    <div class="lesson-card">
-                        <div class="lesson-date-title" style="font-size: 18px;">${formattedDate}</div>
-                        <div class="lesson-topic-subtitle">${displayTitle}</div>
+                    <div class="lesson-card" id="lesson-container-${lesson.id}">
                         
-                        ${coveredHtml}
-                        ${scoresHtml}
-                        ${bulletsHtml}
-                        ${memoryHtml}
-                        ${hwHtml}
-
-                        <div class="action-buttons" style="margin-top: 16px;">
-                            <button class="btn-toggle" onclick="toggleSection('${noteId}')">👁️ View your note</button>
-                            <button class="btn-toggle" onclick="toggleSection('${parentId}')">📱 Parent update</button>
-                        </div>
-
-                        <div id="${noteId}" class="expandable-section section-note hidden">
-                            <div class="raw-note-header">
-                                <span class="raw-note-label">Raw Note</span>
+                        <div class="view-state">
+                            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                                <div>
+                                    <div class="lesson-date-title" style="font-size: 18px;">${formattedDate}</div>
+                                    <div class="lesson-topic-subtitle">${displayTitle}</div>
+                                </div>
+                                <button class="edit-btn-small" onclick="toggleEditNote('lesson-container-${lesson.id}', true)" title="Edit Note">✏️</button>
                             </div>
-                            <div>${lesson.raw_note}</div>
+                            
+                            ${coveredHtml}
+                            ${scoresHtml}
+                            ${bulletsHtml}
+                            ${memoryHtml}
+                            ${hwHtml}
+
+                            <div class="action-buttons" style="margin-top: 16px;">
+                                <button class="btn-toggle" onclick="toggleSection('${noteId}')">👁️ View your note</button>
+                                <button class="btn-toggle" onclick="toggleSection('${parentId}')">📱 Parent update</button>
+                            </div>
+
+                            <div id="${noteId}" class="expandable-section section-note hidden">
+                                <div class="raw-note-header">
+                                    <span class="raw-note-label">Raw Note</span>
+                                </div>
+                                <div>${lesson.raw_note}</div>
+                            </div>
+
+                            <div id="${parentId}" class="expandable-section section-parent hidden">
+                                <div class="parent-header">
+                                    WhatsApp Draft
+                                    <button class="btn-copy" onclick="navigator.clipboard.writeText('${(lesson.parent_update || '').replace(/'/g, "\\'")}'); this.innerText='Copied!'; setTimeout(() => this.innerText='Copy', 2000);">Copy</button>
+                                </div>
+                                <div>${lesson.parent_update || 'No update generated.'}</div>
+                            </div>
                         </div>
 
-                        <div id="${parentId}" class="expandable-section section-parent hidden">
-                            <div class="parent-header">
-                                WhatsApp Draft
-                                <button class="btn-copy" onclick="navigator.clipboard.writeText('${(lesson.parent_update || '').replace(/'/g, "\\'")}'); this.innerText='Copied!'; setTimeout(() => this.innerText='Copy', 2000);">Copy</button>
+                        <div class="edit-state hidden">
+                            <label class="modal-label" style="margin-top: 0;">Lesson Date</label>
+                            <input type="date" id="edit-date-${lesson.id}" class="modal-input" value="${lesson.lesson_date}" style="margin-bottom: 16px;">
+                            
+                            <label class="modal-label">Raw Note</label>
+                            <textarea id="edit-note-${lesson.id}" class="modal-input" style="height: 100px; margin-bottom: 16px;">${lesson.raw_note}</textarea>
+                            
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <button class="btn-danger" style="padding: 6px 10px; font-size: 12px;" onclick="deleteLesson('${lesson.id}')">🗑️ Delete</button>
+                                <div style="display: flex; gap: 8px;">
+                                    <button class="secondary" onclick="toggleEditNote('lesson-container-${lesson.id}', false)">Cancel</button>
+                                    <button class="primary" style="width: auto; padding: 6px 12px; font-size: 13px;" onclick="updateLesson('${lesson.id}')">Save Changes</button>
+                                </div>
                             </div>
-                            <div>${lesson.parent_update || 'No update generated.'}</div>
                         </div>
+
                     </div>
                 `;
                 container.insertAdjacentHTML('beforeend', cardHtml);
             });
+        };
+        // Updates a lesson's date or raw note text
+        window.updateLesson = async function(lessonId) {
+            const newDate = document.getElementById(`edit-date-${lessonId}`).value;
+            const newNote = document.getElementById(`edit-note-${lessonId}`).value;
+
+            if (!newDate) return alert("Date cannot be empty.");
+
+            const { error } = await client.from('lessons')
+                .update({ lesson_date: newDate, raw_note: newNote })
+                .eq('id', lessonId);
+
+            if (error) {
+                alert("Error updating lesson: " + error.message);
+            } else {
+                loadTimeline(); // Refresh to re-sort the dates automatically
+            }
+        };
+
+        // Deletes a lesson note permanently
+        window.deleteLesson = async function(lessonId) {
+            if (!confirm("Are you sure you want to permanently delete this lesson log?")) return;
+            
+            const { error } = await client.from('lessons').delete().eq('id', lessonId);
+            
+            if (error) {
+                alert("Error deleting lesson: " + error.message);
+            } else {
+                loadTimeline();
+            }
         };
 
         // Connects the AI Brain to the Hero Input
