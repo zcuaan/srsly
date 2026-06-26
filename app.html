@@ -268,7 +268,7 @@
 
             <div class="modal-actions">
                 <button type="button" style="background: transparent; border: none; cursor: pointer; font-weight: 600;" onclick="closeModal()">Cancel</button>
-                <button type="button" class="primary" style="width: auto;" id="confirm-add-student-btn">Save Student</button>
+                <button type="button" class="primary" style="width: auto;" id="confirm-add-student-btn" onclick="saveStudent()">Save Student</button>
             </div>
         </div>
     </div>
@@ -741,10 +741,11 @@
         // Open Add Modal
         window.openModal = function() { 
             isEditing = false;
-            document.querySelector('.modal-content h2').innerText = "➕ Add New Student";
+            document.querySelector('#add-student-modal h2').innerText = "➕ Add New Student";
             document.getElementById('confirm-add-student-btn').innerText = "Save Student";
             
-            document.querySelectorAll('.modal-input').forEach(i => i.value = '');
+            // Only clear inputs inside the student modal!
+            document.querySelectorAll('#add-student-modal .modal-input').forEach(i => i.value = '');
             document.getElementById('add-student-modal').classList.remove('hidden'); 
         };
 
@@ -752,10 +753,11 @@
         window.openEditModal = function() {
             if (!activeStudent) return;
             isEditing = true;
-            document.querySelector('.modal-content h2').innerText = "✏️ Edit Student";
+            document.querySelector('#add-student-modal h2').innerText = "✏️ Edit Student";
             document.getElementById('confirm-add-student-btn').innerText = "Update Student";
             
-            const inputs = document.querySelectorAll('.modal-input');
+            // Only grab inputs from the student modal
+            const inputs = document.querySelectorAll('#add-student-modal .modal-input');
             inputs[0].value = activeStudent.name || '';
             inputs[1].value = activeStudent.year_group || '';
             inputs[2].value = activeStudent.subject || '';
@@ -774,7 +776,8 @@
 
         // Save (Insert) or Update existing student in Supabase
         window.saveStudent = async function() {
-            const inputs = document.querySelectorAll('.modal-input');
+            // Only grab inputs from the student modal
+            const inputs = document.querySelectorAll('#add-student-modal .modal-input');
             const name = inputs[0].value;
             let yearGroup = inputs[1].value.trim();
             const subject = inputs[2].value;
