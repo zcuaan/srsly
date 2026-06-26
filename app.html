@@ -358,6 +358,8 @@
                 </div>
             </div>
             <div style="display: flex; gap: 12px; height: 36px;">
+                <button class="secondary" onclick="navigator.clipboard.writeText(window.location.origin + '/parent.html?id=' + activeStudentId); alert('Parent Link Copied!');">🔗 Copy Parent Link</button>
+                
                 <button class="secondary" onclick="openEditModal()">✏️ Edit</button>
                 <button class="btn-danger" onclick="deleteActiveStudent()">🗑️ Delete</button>
             </div>
