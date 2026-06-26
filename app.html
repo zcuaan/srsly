@@ -587,13 +587,19 @@
         window.saveStudent = async function() {
             const inputs = document.querySelectorAll('.modal-input');
             const name = inputs[0].value;
-            const yearGroup = inputs[1].value;
+            let yearGroup = inputs[1].value.trim(); // Changed to 'let' so we can format it
             const subject = inputs[2].value;
             const goal = inputs[3].value;
             const parentContact = inputs[4].value;
             const trackingRules = inputs[5].value;
 
             if (!name) return alert("Please enter a name!");
+
+            // --- SMART FORMATTING ---
+            // If the year group starts with a number (e.g., "12" or "10A"), automatically prepend "Year "
+            if (/^\d/.test(yearGroup)) {
+                yearGroup = 'Year ' + yearGroup;
+            }
 
             let error;
             if (isEditing) {
