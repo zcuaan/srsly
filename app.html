@@ -245,8 +245,16 @@
                 </div>
             </div>
 
-            <label class="modal-label">Goal / Exam</label>
-            <input type="text" class="modal-input" placeholder="e.g. GCSE Higher Tier">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+                <div>
+                    <label class="modal-label" style="margin-top: 0;">Goal / Exam</label>
+                    <input type="text" class="modal-input" placeholder="e.g. GCSE Higher Tier">
+                </div>
+                <div>
+                    <label class="modal-label" style="margin-top: 0;">Session Rate (£)</label>
+                    <input type="number" class="modal-input" placeholder="e.g. 50">
+                </div>
+            </div>
             
             <label class="modal-label">Parent Contact Info</label>
             <input type="text" class="modal-input" placeholder="e.g. Mum (Sarah) - 07700 900000">
@@ -300,9 +308,19 @@
         <div class="header">
             <div>
                 <h1 id="active-student-name">Select a Student</h1>
-                <div class="header-meta">
-                    <span><strong>Subject:</strong> <span id="active-student-subject">-</span></span>
-                    <span><strong>Goal:</strong> <span id="active-student-goal">-</span></span>
+                <div class="header-meta" style="flex-direction: column; gap: 8px;">
+                    <div>
+                        <span><strong>Subject:</strong> <span id="active-student-subject">-</span></span>
+                        <span style="margin: 0 8px;">|</span>
+                        <span><strong>Goal:</strong> <span id="active-student-goal">-</span></span>
+                    </div>
+                    
+                    <div id="balance-pill" style="display: flex; align-items: center; gap: 8px; background: var(--tag-green-bg); color: var(--tag-green-text); padding: 4px 10px; border-radius: 6px; width: fit-content; border: 1px solid #dce6da; transition: all 0.2s;">
+                        <strong>Prepaid Lessons:</strong> 
+                        <span id="active-student-balance" style="font-weight: 700; font-size: 15px; width: 20px; text-align: center;">0</span>
+                        <button class="edit-btn-small" style="background: white; border: 1px solid #dce6da; padding: 2px 6px;" onclick="updateBalance(-1)">-1</button>
+                        <button class="edit-btn-small" style="background: white; border: 1px solid #dce6da; padding: 2px 6px;" onclick="updateBalance(1)">+1</button>
+                    </div>
                 </div>
             </div>
             <div style="display: flex; gap: 12px; height: 36px;">
@@ -438,6 +456,37 @@
             }
         };
 
+        // Instantly updates the prepaid lesson counter and saves to Supabase
+        window.updateBalance = async function(changeAmount) {
+            if (!activeStudentId) return;
+            
+            const currentBalance = activeStudent.lesson_balance || 0;
+            const newBalance = currentBalance + changeAmount;
+            
+            // Update UI instantly
+            document.getElementById('active-student-balance').innerText = newBalance;
+            activeStudent.lesson_balance = newBalance; 
+
+            // Handle color switch
+            const balPill = document.getElementById('balance-pill');
+            if (newBalance < 0) {
+                balPill.style.background = 'var(--tag-red-bg)';
+                balPill.style.color = 'var(--tag-red-text)';
+                balPill.style.borderColor = '#fad1cb';
+            } else {
+                balPill.style.background = 'var(--tag-green-bg)';
+                balPill.style.color = 'var(--tag-green-text)';
+                balPill.style.borderColor = '#dce6da';
+            }
+
+            // Save to DB in the background
+            const { error } = await client.from('students')
+                .update({ lesson_balance: newBalance })
+                .eq('id', activeStudentId);
+
+            if (error) alert("Error saving balance: " + error.message);
+        };
+
         // Toggle between Login and Sign Up UI modes
         window.toggleAuthMode = function() {
             isSignUpMode = !isSignUpMode;
@@ -543,7 +592,21 @@
             document.getElementById('active-student-subject').innerText = student.subject || '-';
             document.getElementById('active-student-goal').innerText = student.goal || '-';
             
-            // Note: Contact and Rules removal verified.
+            // Load Balance
+            const bal = student.lesson_balance || 0;
+            const balPill = document.getElementById('balance-pill');
+            document.getElementById('active-student-balance').innerText = bal;
+            
+            // Turn Red if in Arrears!
+            if (bal < 0) {
+                balPill.style.background = 'var(--tag-red-bg)';
+                balPill.style.color = 'var(--tag-red-text)';
+                balPill.style.borderColor = '#fad1cb';
+            } else {
+                balPill.style.background = 'var(--tag-green-bg)';
+                balPill.style.color = 'var(--tag-green-text)';
+                balPill.style.borderColor = '#dce6da';
+            }
             
             switchView('student');
             loadTimeline();
@@ -572,8 +635,9 @@
             inputs[1].value = activeStudent.year_group || '';
             inputs[2].value = activeStudent.subject || '';
             inputs[3].value = activeStudent.goal || '';
-            inputs[4].value = activeStudent.parent_contact || '';
-            inputs[5].value = activeStudent.tracking_rules || '';
+            inputs[4].value = activeStudent.session_rate || ''; // NEW: Session Rate
+            inputs[5].value = activeStudent.parent_contact || '';
+            inputs[6].value = activeStudent.tracking_rules || '';
             
             document.getElementById('add-student-modal').classList.remove('hidden');
         };
@@ -587,31 +651,31 @@
         window.saveStudent = async function() {
             const inputs = document.querySelectorAll('.modal-input');
             const name = inputs[0].value;
-            let yearGroup = inputs[1].value.trim(); // Changed to 'let' so we can format it
+            let yearGroup = inputs[1].value.trim();
             const subject = inputs[2].value;
             const goal = inputs[3].value;
-            const parentContact = inputs[4].value;
-            const trackingRules = inputs[5].value;
-
-            if (!name) return alert("Please enter a name!");
+            const sessionRate = parseInt(inputs[4].value) || 0; // NEW: Session Rate
+            const parentContact = inputs[5].value;
+            const trackingRules = inputs[6].value;
 
             // --- SMART FORMATTING ---
-            // If the year group starts with a number (e.g., "12" or "10A"), automatically prepend "Year "
             if (/^\d/.test(yearGroup)) {
                 yearGroup = 'Year ' + yearGroup;
             }
+
+            if (!name) return alert("Please enter a name!");
 
             let error;
             if (isEditing) {
                 // UPDATE existing record
                 const { error: updateError } = await client.from('students')
-                    .update({ name, year_group: yearGroup, subject, goal, parent_contact: parentContact, tracking_rules: trackingRules })
+                    .update({ name, year_group: yearGroup, subject, goal, session_rate: sessionRate, parent_contact: parentContact, tracking_rules: trackingRules })
                     .eq('id', activeStudentId);
                 error = updateError;
             } else {
                 // INSERT new record
                 const { error: insertError } = await client.from('students')
-                    .insert([{ tutor_id: currentUser.id, name, year_group: yearGroup, subject, goal, parent_contact: parentContact, tracking_rules: trackingRules }]);
+                    .insert([{ tutor_id: currentUser.id, name, year_group: yearGroup, subject, goal, session_rate: sessionRate, parent_contact: parentContact, tracking_rules: trackingRules }]);
                 error = insertError;
             }
 
@@ -629,7 +693,7 @@
                     document.getElementById('active-student-goal').innerText = goal || '-';
                     
                     // Update our stored object
-                    activeStudent = { ...activeStudent, name, year_group: yearGroup, subject, goal, parent_contact: parentContact, tracking_rules: trackingRules };
+                    activeStudent = { ...activeStudent, name, year_group: yearGroup, subject, goal, session_rate: sessionRate, parent_contact: parentContact, tracking_rules: trackingRules };
                 }
             }
         };
@@ -695,13 +759,13 @@
         const safeJoin = (val) => Array.isArray(val) ? val.join(' ') : val;
 
         function escapeHtml(value) {
-    return String(value)
-        .replaceAll('&', '&amp;')
-        .replaceAll('<', '&lt;')
-        .replaceAll('>', '&gt;')
-        .replaceAll('"', '&quot;')
-        .replaceAll("'", '&#039;');
-}
+            return String(value)
+                .replaceAll('&', '&amp;')
+                .replaceAll('<', '&lt;')
+                .replaceAll('>', '&gt;')
+                .replaceAll('"', '&quot;')
+                .replaceAll("'", '&#039;');
+        }
 
         // Fetches lessons from Supabase and renders the timeline & snapshot
         window.loadTimeline = async function() {
@@ -799,52 +863,52 @@
                 }
 
                 // 6. Homework / Next Steps
-let hwHtml = '';
+                let hwHtml = '';
 
-const homework = Array.isArray(metrics.homework) ? metrics.homework.filter(Boolean) : [];
-const nextSteps = Array.isArray(metrics.next_lesson_notes) ? metrics.next_lesson_notes.filter(Boolean) : [];
+                const homework = Array.isArray(metrics.homework) ? metrics.homework.filter(Boolean) : [];
+                const nextSteps = Array.isArray(metrics.next_lesson_notes) ? metrics.next_lesson_notes.filter(Boolean) : [];
 
-if (homework.length > 0 || nextSteps.length > 0) {
-    hwHtml = `<div class="lesson-hw-next" style="margin-top: 8px; border-top: 1px solid var(--border); padding-top: 16px;">`;
+                if (homework.length > 0 || nextSteps.length > 0) {
+                    hwHtml = `<div class="lesson-hw-next" style="margin-top: 8px; border-top: 1px solid var(--border); padding-top: 16px;">`;
 
-    if (homework.length === 1) {
-        hwHtml += `
-            <div style="margin-bottom: 6px;">
-                <strong>Homework:</strong>
-                <span style="color: var(--text-muted);">${escapeHtml(homework[0])}</span>
-            </div>
-        `;
-    } else if (homework.length > 1) {
-        hwHtml += `
-            <div style="margin-bottom: 10px;">
-                <strong>Homework:</strong>
-                <ul style="margin: 6px 0 0 20px; padding: 0; color: var(--text-muted);">
-                    ${homework.map(item => `<li>${escapeHtml(item)}</li>`).join('')}
-                </ul>
-            </div>
-        `;
-    }
+                    if (homework.length === 1) {
+                        hwHtml += `
+                            <div style="margin-bottom: 6px;">
+                                <strong>Homework:</strong>
+                                <span style="color: var(--text-muted);">${escapeHtml(homework[0])}</span>
+                            </div>
+                        `;
+                    } else if (homework.length > 1) {
+                        hwHtml += `
+                            <div style="margin-bottom: 10px;">
+                                <strong>Homework:</strong>
+                                <ul style="margin: 6px 0 0 20px; padding: 0; color: var(--text-muted);">
+                                    ${homework.map(item => `<li>${escapeHtml(item)}</li>`).join('')}
+                                </ul>
+                            </div>
+                        `;
+                    }
 
-    if (nextSteps.length === 1) {
-        hwHtml += `
-            <div>
-                <strong>Next Lesson:</strong>
-                <span style="color: var(--text-muted);">${escapeHtml(nextSteps[0])}</span>
-            </div>
-        `;
-    } else if (nextSteps.length > 1) {
-        hwHtml += `
-            <div>
-                <strong>Next Lesson:</strong>
-                <ul style="margin: 6px 0 0 20px; padding: 0; color: var(--text-muted);">
-                    ${nextSteps.map(item => `<li>${escapeHtml(item)}</li>`).join('')}
-                </ul>
-            </div>
-        `;
-    }
+                    if (nextSteps.length === 1) {
+                        hwHtml += `
+                            <div>
+                                <strong>Next Lesson:</strong>
+                                <span style="color: var(--text-muted);">${escapeHtml(nextSteps[0])}</span>
+                            </div>
+                        `;
+                    } else if (nextSteps.length > 1) {
+                        hwHtml += `
+                            <div>
+                                <strong>Next Lesson:</strong>
+                                <ul style="margin: 6px 0 0 20px; padding: 0; color: var(--text-muted);">
+                                    ${nextSteps.map(item => `<li>${escapeHtml(item)}</li>`).join('')}
+                                </ul>
+                            </div>
+                        `;
+                    }
 
-    hwHtml += `</div>`;
-}
+                    hwHtml += `</div>`;
+                }
 
                 // Compile Card
                 const cardHtml = `
@@ -990,7 +1054,6 @@ if (homework.length > 0 || nextSteps.length > 0) {
             await client.from('todos').update({ is_completed: true }).eq('id', todoId);
             setTimeout(loadTodos, 500); // Refresh the list
         };
-        
     </script>
 </body>
 </html>
