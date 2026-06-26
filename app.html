@@ -273,21 +273,21 @@
         </div>
     </div>
 
-    <div id="payment-modal" class="modal-overlay hidden">
-        <div class="modal-content">
-            <h2 style="margin-top: 0; font-size: 20px;">💸 Log Payment</h2>
-            
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+                <div>
+                    <label class="modal-label" style="margin-top: 0;">Date</label>
+                    <input type="date" id="payment-date" class="modal-input">
+                </div>
                 <div>
                     <label class="modal-label" style="margin-top: 0;">Amount (£)</label>
-                    <input type="number" id="payment-amount" class="modal-input" placeholder="e.g. 200 or -50">
+                    <input type="number" id="payment-amount" class="modal-input" placeholder="e.g. 200">
                 </div>
                 <div>
                     <label class="modal-label" style="margin-top: 0;">Method</label>
                     <select id="payment-method" class="modal-input">
-                        <option value="Bank Transfer">Bank Transfer</option>
+                        <option value="Bank Transfer">Bank</option>
                         <option value="Cash">Cash</option>
-                        <option value="Adjustment">Manual Adjustment</option>
+                        <option value="Adjustment">Adjustment</option>
                     </select>
                 </div>
             </div>
@@ -509,6 +509,8 @@
         window.openPaymentModal = function() {
             document.getElementById('payment-amount').value = '';
             document.getElementById('payment-note').value = '';
+            // Automatically fill in today's date!
+            document.getElementById('payment-date').value = new Date().toISOString().split('T')[0];
             document.getElementById('payment-modal').classList.remove('hidden');
         };
 
@@ -552,6 +554,7 @@
             const amount = parseInt(document.getElementById('payment-amount').value);
             const method = document.getElementById('payment-method').value;
             const note = document.getElementById('payment-note').value;
+            const paymentDate = document.getElementById('payment-date').value; // NEW!
 
             if (!amount || isNaN(amount)) return alert('Please enter a valid amount.');
 
@@ -565,8 +568,10 @@
                 amount: amount,
                 method: method,
                 note: note,
-                payment_date: new Date().toISOString().split('T')[0]
+                payment_date: paymentDate // NEW: Uses your selected date!
             }]);
+            
+            // ... (rest of the function stays exactly the same)
 
             if (ledgerError) {
                 alert("Error saving payment: " + ledgerError.message);
@@ -1243,7 +1248,7 @@
                 .from('payments')
                 .select('*, students(name)')
                 .eq('tutor_id', currentUser.id)
-                .order('created_at', { ascending: false });
+                .order('payment_date', { ascending: false }); // CHANGED from 'created_at'
 
             if (error) {
                 container.innerHTML = `<div style="color: red; padding: 20px;">Error loading ledger.</div>`;
