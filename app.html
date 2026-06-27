@@ -438,9 +438,10 @@
                 <div class="header-meta">Curated tools, worksheets, and books for private tutors.</div>
             </div>
         </div>
+
         <div class="notion-group">
-            <div class="notion-group-header"><span>▾</span> <span>✨ Science & Maths</span></div>
-            <div class="notion-table">
+            <div class="notion-group-header" onclick="toggleSection('res-maths')"><span>▾</span> <span>✨ Science & Maths</span></div>
+            <div class="notion-table" id="res-maths">
                 <div class="notion-row header">
                     <div class="notion-cell"><span>Aa</span> Resource name</div>
                     <div class="notion-cell"><span>🔑</span> Access</div>
@@ -453,22 +454,77 @@
                     <div class="notion-cell notes">GCSE/A-Level past papers and topic questions</div>
                     <div class="notion-cell"><a href="https://www.physicsandmathstutor.com/" target="_blank" class="quick-link">Open</a></div>
                 </div>
+                <div class="notion-row">
+                    <div class="notion-cell"><span>🧞‍♂️</span> Old Maths Genie</div>
+                    <div class="notion-cell"><span class="pill gray">Free</span></div>
+                    <div class="notion-cell notes">Classic layout for GCSE/A-Level topic practice</div>
+                    <div class="notion-cell"><a href="https://old.mathsgenie.co.uk/" target="_blank" class="quick-link">Open</a></div>
+                </div>
+                <div class="notion-row">
+                    <div class="notion-cell"><span>📝</span> Save My Exams</div>
+                    <div class="notion-cell"><span class="pill strength">Freemium</span></div>
+                    <div class="notion-cell notes">High-quality revision notes and mark schemes</div>
+                    <div class="notion-cell"><a href="https://www.savemyexams.com/" target="_blank" class="quick-link">Open</a></div>
+                </div>
+                <div class="notion-row">
+                    <div class="notion-cell"><span>🗂️</span> MME Past Papers</div>
+                    <div class="notion-cell"><span class="pill gray">Free</span></div>
+                    <div class="notion-cell notes">Comprehensive database of all exam board past papers</div>
+                    <div class="notion-cell"><a href="https://mmerevise.co.uk/all-past-papers/" target="_blank" class="quick-link">Open</a></div>
+                </div>
             </div>
         </div>
-    </div>
 
-    <div class="main-content hidden" id="view-settings">
-        <div class="header" style="margin-bottom: 40px;">
-            <div>
-                <h1>⚙️ Settings</h1>
-                <div class="header-meta">Manage your account, billing, and preferences.</div>
-            </div>
-        </div>
-        <div class="settings-grid">
-            <div>
-                <div class="billing-box">
-                    <h2 style="color: var(--callout-blue-text); margin-bottom: 8px;">Current Plan: Free Tier</h2>
-                    <div style="font-size: 14px; color: var(--callout-blue-text);">You are using a shared beta version.</div>
+        <div class="notion-group">
+            <div class="notion-group-header" onclick="toggleSection('res-11plus')"><span>▾</span> <span>🎓 11+ & Entrance Exams</span></div>
+            <div class="notion-table" id="res-11plus">
+                <div class="notion-row header">
+                    <div class="notion-cell"><span>Aa</span> Resource name</div>
+                    <div class="notion-cell"><span>🔑</span> Access</div>
+                    <div class="notion-cell"><span>🎯</span> Best for</div>
+                    <div class="notion-cell"><span>↗</span> Link</div>
+                </div>
+                <div class="notion-row">
+                    <div class="notion-cell"><span>📱</span> 11+ Vocab Trainer</div>
+                    <div class="notion-cell"><span class="pill strength">App</span></div>
+                    <div class="notion-cell notes">Spaced repetition flashcards, synonyms, and daily vocab testing</div>
+                    <div class="notion-cell"><a href="#" target="https://11plusvocabtrainer.com/" class="quick-link">Open</a></div>
+                </div>
+                <div class="notion-row">
+                    <div class="notion-cell"><span>⚛️</span> Atom Learning</div>
+                    <div class="notion-cell"><span class="pill weakness">Paid</span></div>
+                    <div class="notion-cell notes">Adaptive online platform for 11+ curriculum</div>
+                    <div class="notion-cell"><a href="https://atomlearning.com/" target="_blank" class="quick-link">Open</a></div>
+                </div>
+                <div class="notion-row">
+                    <div class="notion-cell"><span>🏆</span> Exam Papers Plus</div>
+                    <div class="notion-cell"><span class="pill weakness">Paid</span></div>
+                    <div class="notion-cell notes">Highly targeted, challenging mock papers</div>
+                    <div class="notion-cell"><a href="https://exampapersplus.co.uk/" target="_blank" class="quick-link">Open</a></div>
+                </div>
+                <div class="notion-row">
+                    <div class="notion-cell"><span>📘</span> Bond Assessment 8-9</div>
+                    <div class="notion-cell"><span class="pill gray">Amazon</span></div>
+                    <div class="notion-cell notes">Foundational preparation books</div>
+                    <div class="notion-cell"><a href="https://amzn.eu/d/0eU9D0mZ" target="_blank" class="quick-link">Open</a></div>
+                </div>
+                <div class="notion-row">
+                    <div class="notion-cell"><span>📘</span> Bond Assessment 9-10</div>
+                    <div class="notion-cell"><span class="pill gray">Amazon</span></div>
+                    <div class="notion-cell notes">Intermediate preparation books</div>
+                    <div class="notion-cell"><a href="https://amzn.eu/d/0ilTCdln" target="_blank" class="quick-link">Open</a></div>
+                </div>
+                <div class="notion-row">
+                    <div class="notion-cell"><span>📕</span> Bond Assessment 10-11+ (Bk 2)</div>
+                    <div class="notion-cell"><span class="pill gray">Amazon</span></div>
+                    <div class="notion-cell notes">Advanced exam-level preparation books</div>
+                    <div class="notion-cell"><a href="https://amzn.eu/d/0fbqPDnA" target="_blank" class="quick-link">Open</a></div>
+                </div>
+                <div class="notion-row">
+                    <div class="notion-cell"><span>📦</span> GL Assessment Bundle</div>
+                    <div class="notion-cell"><span class="pill gray">Amazon</span></div>
+                    <div class="notion-cell notes">Official GL practice papers bundle</div>
+                    <div class="notion-cell"><a href="https://amzn.eu/d/08q6FwOh" target="_blank" class="quick-link">Open</a></div>
                 </div>
             </div>
         </div>
