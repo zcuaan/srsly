@@ -359,7 +359,6 @@
             </div>
             <div style="display: flex; gap: 12px; height: 36px;">
                 <button class="secondary" onclick="navigator.clipboard.writeText(window.location.origin + '/parent.html?id=' + activeStudentId); alert('Parent Link Copied!');">🔗 Copy Parent Link</button>
-                
                 <button class="secondary" onclick="openEditModal()">✏️ Edit</button>
                 <button class="btn-danger" onclick="deleteActiveStudent()">🗑️ Delete</button>
             </div>
@@ -1095,6 +1094,24 @@
                     hwHtml += `</div>`;
                 }
 
+                // --- PARENT PORTAL LINK GENERATOR ---
+                const portalLink = window.location.origin + '/parent.html?id=' + activeStudentId;
+                const rawParentUpdate = lesson.parent_update || '';
+                
+                let copyText = '';
+                let displayParentHtml = 'No update generated.';
+                
+                if (rawParentUpdate) {
+                    // What gets copied to the clipboard (real text newlines)
+                    const fullTextForClipboard = rawParentUpdate + '\n\nSee full progress here: ' + portalLink;
+                    // Escaped safely so the HTML button doesn't break
+                    copyText = fullTextForClipboard.replace(/'/g, "\\'").replace(/\n/g, "\\n");
+                    
+                    // What you see on the screen (HTML line breaks and a clickable link)
+                    displayParentHtml = escapeHtml(rawParentUpdate).replace(/\n/g, '<br>') + 
+                        `<br><br>See full progress here: <a href="${portalLink}" target="_blank" style="color: var(--callout-green-text); font-weight: 600;">${portalLink}</a>`;
+                }
+
                 // Compile Card with View and Edit States
                 const cardHtml = `
                     <div class="lesson-card" id="lesson-container-${lesson.id}">
@@ -1129,9 +1146,9 @@
                             <div id="${parentId}" class="expandable-section section-parent hidden">
                                 <div class="parent-header">
                                     WhatsApp Draft
-                                    <button class="btn-copy" onclick="navigator.clipboard.writeText('${(lesson.parent_update || '').replace(/'/g, "\\'")}'); this.innerText='Copied!'; setTimeout(() => this.innerText='Copy', 2000);">Copy</button>
+                                    <button class="btn-copy" onclick="navigator.clipboard.writeText('${copyText}'); this.innerText='Copied!'; setTimeout(() => this.innerText='Copy', 2000);">Copy</button>
                                 </div>
-                                <div>${lesson.parent_update || 'No update generated.'}</div>
+                                <div>${displayParentHtml}</div>
                             </div>
                         </div>
 
