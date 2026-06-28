@@ -4,18 +4,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Tutor Log App | Student Memory System for Private Tutors</title>
-    <meta name="description" content="Log in to Tutor Log, the student memory system for private tutors. Turn quick lesson notes into student timelines, to-dos, recurring patterns and parent updates.">
+    <title>Lesson Log App | Student Memory System for Private Tutors</title>
+    <meta name="description" content="Log in to Lesson Log, the student memory system for private tutors. Turn quick lesson notes into student timelines, to-dos, recurring patterns and parent updates.">
     <meta name="robots" content="noindex, nofollow">
 
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🦀</text></svg>">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🪵</text></svg>">
 
     <meta name="theme-color" content="#f7f7f5">
 
-    <meta property="og:title" content="Tutor Log | Student Memory System for Private Tutors">
-    <meta property="og:description" content="For tutors who remember too much. Tutor Log turns quick post-lesson notes into student histories, to-dos, recurring patterns and parent updates.">
+    <meta property="og:title" content="Lesson Log | Student Memory System for Private Tutors">
+    <meta property="og:description" content="For tutors who remember too much. Lesson Log turns quick post-lesson notes into student histories, to-dos, recurring patterns and parent updates.">
     <meta property="og:type" content="website">
-    <meta property="og:site_name" content="Tutor Log">
+    <meta property="og:site_name" content="Lesson Log">
 
     <style>
         :root {
@@ -207,7 +207,7 @@
 
     <div id="auth-screen" class="auth-container">
         <div class="auth-card">
-            <h2 id="auth-title" style="font-size: 22px; margin-bottom: 6px; letter-spacing: -0.02em;">🦀 Welcome to Tutor Log</h2>
+            <h2 id="auth-title" style="font-size: 22px; margin-bottom: 6px; letter-spacing: -0.02em;">🪵 Welcome to Lesson Log</h2>
             <p id="auth-subtitle" style="color: var(--text-muted); margin: 0 0 24px 0; font-size: 13px;">Log in to access your memory system.</p>
             
             <label class="modal-label">Email Address</label>
@@ -261,7 +261,7 @@
             <input type="text" class="modal-input" placeholder="e.g. Mum (Sarah) - 07700 900000">
             
             <div style="background: var(--bg-sidebar); border: 1px solid var(--border); padding: 16px; border-radius: 8px; margin-top: 20px;">
-                <label class="modal-label" style="margin-top: 0; color: var(--text-main);">🤖 What should Tutor Log remember? (Optional)</label>
+                <label class="modal-label" style="margin-top: 0; color: var(--text-main);">🤖 What should Lesson Log remember? (Optional)</label>
                 <p style="font-size: 12px; color: var(--text-muted); margin: 0 0 10px 0;">Instruct the AI on what metrics or progress to track specifically for this student.</p>
                 <textarea class="modal-input" style="height: 60px; margin-bottom: 0;" placeholder="e.g. Track textbook page progress and 10-minute test scores."></textarea>
             </div>
@@ -308,7 +308,7 @@
 
     <div class="sidebar">
         <div style="display: flex; flex-direction: column; flex: 1;">
-            <div class="logo">🦀 Tutor Log</div>
+            <div class="logo">🪵 Lesson Log</div>
             <div class="subtitle">Never lose track of a student again.</div>
             
             <div class="section-title">Workspace</div>
@@ -681,7 +681,7 @@
         // Toggle between Login and Sign Up UI modes
         window.toggleAuthMode = function() {
             isSignUpMode = !isSignUpMode;
-            document.getElementById('auth-title').innerText = isSignUpMode ? "✨ Create an Account" : "🦀 Welcome to Tutor Log";
+            document.getElementById('auth-title').innerText = isSignUpMode ? "✨ Create an Account" : "🪵 Welcome to Lesson Log";
             document.getElementById('auth-subtitle').innerText = isSignUpMode ? "Sign up to start your memory system." : "Log in to access your memory system.";
             document.getElementById('auth-submit-btn').innerText = isSignUpMode ? "Sign Up" : "Log In";
             document.getElementById('auth-toggle-msg').innerText = isSignUpMode ? "Already have an account?" : "Don't have an account?";
