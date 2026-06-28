@@ -1034,22 +1034,23 @@
             
             if (lessons.length > 0) {
                 snapshotWarning.classList.add('hidden');
+                
+                // The AI curates a rolling "living state" on each lesson card.
+                // We just grab the absolute latest one!
                 const latestSnapshot = lessons[0].snapshot_data || {};
                 
                 let snapshotHtml = '';
-                if (latestSnapshot.progress_notes && latestSnapshot.progress_notes.length > 0) {
-                    snapshotHtml += `<li style="margin-bottom: 8px;"><strong>📈 Progress:</strong> <span style="color: var(--text-muted);">${safeJoin(latestSnapshot.progress_notes)}</span></li>`;
+                if (latestSnapshot.current_progress && latestSnapshot.current_progress.length > 0) {
+                    snapshotHtml += `<li style="margin-bottom: 8px;"><strong>📍 Progress:</strong> <span style="color: var(--text-muted);">${safeJoin(latestSnapshot.current_progress)}</span></li>`;
                 }
-                if (latestSnapshot.recurring_patterns && latestSnapshot.recurring_patterns.length > 0) {
-                    snapshotHtml += `<li style="margin-bottom: 8px;"><strong>⚠️ Recurring:</strong> <span style="color: var(--text-muted);">${safeJoin(latestSnapshot.recurring_patterns)}</span></li>`;
-                } else if (latestSnapshot.recurring_issues && latestSnapshot.recurring_issues.length > 0) {
-                    snapshotHtml += `<li style="margin-bottom: 8px;"><strong>⚠️ Recurring:</strong> <span style="color: var(--text-muted);">${safeJoin(latestSnapshot.recurring_issues)}</span></li>`;
+                if (latestSnapshot.watch_points && latestSnapshot.watch_points.length > 0) {
+                    snapshotHtml += `<li style="margin-bottom: 8px;"><strong>⚠️ Watch points:</strong> <span style="color: var(--text-muted);">${safeJoin(latestSnapshot.watch_points)}</span></li>`;
                 }
-                if (latestSnapshot.admin_notes && latestSnapshot.admin_notes.length > 0) {
-                    snapshotHtml += `<li style="margin-bottom: 8px;"><strong>📁 Admin:</strong> <span style="color: var(--text-muted);">${safeJoin(latestSnapshot.admin_notes)}</span></li>`;
+                if (latestSnapshot.strengths && latestSnapshot.strengths.length > 0) {
+                    snapshotHtml += `<li style="margin-bottom: 8px;"><strong>⭐️ Strengths:</strong> <span style="color: var(--text-muted);">${safeJoin(latestSnapshot.strengths)}</span></li>`;
                 }
                 
-                snapshotList.innerHTML = snapshotHtml || `<li style="color: var(--text-muted); font-style: italic;">No specific patterns noted yet.</li>`;
+                snapshotList.innerHTML = snapshotHtml || `<li style="color: var(--text-muted); font-style: italic;">No current state noted yet. Add a lesson to build the profile.</li>`;
             } else {
                 snapshotWarning.classList.remove('hidden');
                 snapshotList.innerHTML = '';
