@@ -1270,10 +1270,32 @@
             if (!rawNote) return alert("Please type a lesson note first!");
             if (!activeStudentId) return alert("Please select a student from the sidebar.");
 
-            // Enter loading state
-            saveBtn.innerText = "🧠 Processing with AI...";
+            // --- NEW CYCLING LOADING STATE ---
             saveBtn.disabled = true;
             saveBtn.style.opacity = "0.7";
+            
+            const loadingPhrases = [
+                "🧠 Reading your notes...",
+                "✨ Structuring timeline...",
+                "🔍 Checking recent history...",
+                "🤖 Drafting parent update...",
+                "📝 Extracting to-dos...",
+                "🚀 Almost there..."
+            ];
+            
+            let phraseIndex = 0;
+            saveBtn.innerText = loadingPhrases[0];
+            
+            // Swap the text every 1.5 seconds
+            const loadingInterval = setInterval(() => {
+                phraseIndex++;
+                // If it takes a super long time, just hang on the last phrase
+                if (phraseIndex < loadingPhrases.length) {
+                    saveBtn.innerText = loadingPhrases[phraseIndex];
+                } else {
+                    saveBtn.innerText = "⏳ Just wrapping up...";
+                }
+            }, 1500);
 
             try {
                 const { data: { session } } = await client.auth.getSession();
@@ -1326,6 +1348,8 @@
                 alert("Error: " + err.message);
                 console.error("RAW ERROR DETAILS:", err);
             } finally {
+                // --- CLEANUP LOADING STATE ---
+                clearInterval(loadingInterval); // Stop the text swapping
                 saveBtn.innerText = "Save & create update";
                 saveBtn.disabled = false;
                 saveBtn.style.opacity = "1";
