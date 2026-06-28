@@ -393,12 +393,33 @@
     </div>
 
     <div class="main-content hidden" id="view-todos">
-        <div class="header" style="margin-bottom: 40px;">
+        <div class="header" style="margin-bottom: 24px;">
             <div>
                 <h1>📌 To-do list</h1>
                 <div class="header-meta">Manage tasks and reminders across all your students.</div>
             </div>
         </div>
+
+        <div style="display: flex; gap: 12px; margin-bottom: 30px; align-items: flex-end; background: var(--bg-hover); padding: 16px; border-radius: 8px; border: 1px solid var(--border);">
+            <div style="flex: 2;">
+                <label class="modal-label" style="margin-top: 0;">New Task</label>
+                <input type="text" id="manual-todo-task" class="text-input" placeholder="e.g. Print worksheets for next week" style="margin-bottom: 0; padding: 8px 12px;">
+            </div>
+            <div style="flex: 1;">
+                <label class="modal-label" style="margin-top: 0;">Student (Optional)</label>
+                <select id="manual-todo-student" class="text-input" style="margin-bottom: 0; padding: 8px 12px; height: 38px;">
+                    <option value="">-- General Task --</option>
+                </select>
+            </div>
+            <div style="flex: 1;">
+                <label class="modal-label" style="margin-top: 0;">Due Date (Optional)</label>
+                <input type="date" id="manual-todo-date" class="text-input" style="margin-bottom: 0; padding: 8px 12px; height: 38px;">
+            </div>
+            <div>
+                <button class="primary" onclick="addManualTodo()" style="padding: 8px 16px; width: auto; height: 38px;">Add Task</button>
+            </div>
+        </div>
+
         <div class="notion-table" id="todos-table">
             <div class="notion-row header todo-layout">
                 <div class="notion-cell"><span>📌</span> Task</div>
@@ -406,7 +427,7 @@
                 <div class="notion-cell"><span>📅</span> Added</div>
                 <div class="notion-cell"><span>⏰</span> Due</div>
             </div>
-            <div style="padding: 20px; text-align: center; color: var(--text-muted);">To-do auto-saving to your database is ready to be linked!</div>
+            <div style="padding: 20px; text-align: center; color: var(--text-muted);">Loading tasks...</div>
         </div>
     </div>
 
@@ -746,7 +767,10 @@
             if (error) return console.error(error);
 
             const listContainer = document.getElementById('sidebar-student-list');
+            const todoStudentSelect = document.getElementById('manual-todo-student'); // NEW
+            
             listContainer.innerHTML = '';
+            todoStudentSelect.innerHTML = '<option value="">-- General Task --</option>'; // NEW
 
             if (students.length === 0) {
                 listContainer.innerHTML = `<li style="padding: 8px 12px; color: var(--text-muted); font-style: italic;">No students yet</li>`;
@@ -760,6 +784,12 @@
                 li.innerText = `${student.name} (${student.year_group || 'N/A'})`;
                 li.onclick = () => selectStudent(student);
                 listContainer.appendChild(li);
+
+                // NEW: Populate the To-Do Dropdown
+                const option = document.createElement('option');
+                option.value = student.id;
+                option.innerText = student.name;
+                todoStudentSelect.appendChild(option);
             });
         };
 
@@ -1329,16 +1359,30 @@
             } else {
                 todos.forEach(todo => {
                     const studentName = todo.students ? todo.students.name : 'General';
+                    
+                    // --- THE AI BADGE DETECTOR ---
+                    let displayTask = todo.task;
+                    let badgeHtml = '';
+                    
+                    if (displayTask.startsWith('🤖')) {
+                        // Strip the secret marker out of the text
+                        displayTask = displayTask.replace('🤖', '').trim();
+                        // Get the date it was created (which matches the lesson date)
+                        const lessonDate = new Date(todo.created_at).toLocaleDateString('en-GB');
+                        // Create the beautiful blue pill
+                        badgeHtml = `<span style="font-size: 11px; background: var(--callout-blue-bg); color: var(--callout-blue-text); padding: 2px 6px; border-radius: 4px; margin-left: 8px; border: 1px solid var(--callout-blue-border); white-space: nowrap;">🤖 Lesson: ${lessonDate}</span>`;
+                    }
+                    
                     html += `
                         <div class="notion-row todo-layout" id="todo-${todo.id}">
-                            <div class="notion-cell" style="font-weight: 500;">
+                            <div class="notion-cell" style="font-weight: 500; white-space: normal;">
                                 <input type="checkbox" style="margin-right: 12px; accent-color: var(--primary); cursor: pointer;" 
                                        onclick="completeTodo('${todo.id}')">
-                                ${todo.task}
+                                <span style="line-height: 1.4;">${displayTask} ${badgeHtml}</span>
                             </div>
                             <div class="notion-cell" style="color: var(--text-muted);"><span class="pill gray">${studentName}</span></div>
-                            <div class="notion-cell"><span style="color: var(--text-muted); font-size: 12px;">${new Date(todo.created_at).toLocaleDateString()}</span></div>
-                            <div class="notion-cell"><span style="color: var(--text-muted); font-size: 12px;">${todo.due_date || '-'}</span></div>
+                            <div class="notion-cell"><span style="color: var(--text-muted); font-size: 12px;">${new Date(todo.created_at).toLocaleDateString('en-GB')}</span></div>
+                            <div class="notion-cell"><span style="color: var(--text-muted); font-size: 12px;">${todo.due_date ? new Date(todo.due_date).toLocaleDateString('en-GB') : '-'}</span></div>
                         </div>
                     `;
                 });
