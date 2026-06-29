@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <!-- Primary SEO -->
     <title>Lesson Log | Notes & Progress Tracker for Tutors, Coaches and Trainers</title> 
     <meta name="description" content="Lesson Log helps tutors, teachers, coaches and trainers turn quick lesson or session notes into learner histories, progress tracking, tasks and parent or client updates."> 
     <meta name="keywords" content="lesson notes, tutor notes, coaching notes, trainer notes, student progress tracker, client progress tracker, lesson history, session notes, parent updates, client updates, tutoring CRM, coaching CRM, self employed admin"> 
@@ -12,23 +11,19 @@
     <meta name="robots" content="index, follow">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🪵</text></svg>">
 
-    <!-- Canonical URL -->
     <link rel="canonical" href="https://YOURDOMAIN.com/">
 
-    <!-- Open Graph / Social Sharing -->
     <meta property="og:title" content="Lesson Log | Notes & Progress Tracker for Tutors, Coaches and Trainers"> 
     <meta property="og:description" content="For tutors, teachers, coaches and trainers who remember too much. Turn quick session notes into learner histories, practice tasks, updates and memory snapshots."> <meta property="og:type" content="website"> 
     <meta property="og:url" content="https://YOURDOMAIN.com/"> 
     <meta property="og:site_name" content="Lesson Log">
     <meta property="og:image" content="https://YOURDOMAIN.com/og-image.png">
 
-    <!-- Twitter / X Card -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="Lesson Log | Notes & Progress Tracker for Tutors, Coaches and Trainers"> 
     <meta name="twitter:description" content="Turn quick lesson and session notes into learner histories, practice tasks, updates and memory snapshots.">
     <meta name="twitter:image" content="https://YOURDOMAIN.com/og-image.png">
 
-    <!-- Theme / Browser -->
     <meta name="theme-color" content="#f7f7f5">
      
     <style>
@@ -122,12 +117,39 @@
         .m-pill { font-size: 11px; padding: 2px 6px; border-radius: 4px; font-weight: 500;}
         .m-whatsapp { background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; padding: 10px; border-radius: 6px; font-size: 12px; }
 
-        /* Features Section */
+        /* Features Section (Emotional Cards) */
         .features { background: var(--bg-secondary); padding: 100px 20px; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
         .features-grid { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: repeat(3, 1fr); gap: 40px; }
         .feature-item h3 { font-size: 18px; margin: 0 0 12px 0; color: var(--text-main); }
         .feature-item p { font-size: 15px; color: var(--text-muted); margin: 0; }
         .feature-icon { font-size: 32px; margin-bottom: 16px; }
+
+        /* NEW: Workflow Section */
+        .workflow-section { padding: 100px 20px; text-align: center; max-width: 1100px; margin: 0 auto; }
+        .workflow-path { display: flex; align-items: center; justify-content: center; gap: 16px; margin-top: 50px; flex-wrap: wrap; }
+        .workflow-step { background: var(--bg-main); border: 1px solid var(--border); padding: 16px 20px; border-radius: 8px; font-weight: 600; font-size: 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.03); flex: 1; min-width: 160px; text-align: center;}
+        .workflow-arrow { color: var(--text-muted); font-weight: bold; font-size: 18px; }
+
+        /* NEW: 2x3 Grid Section */
+        .grid-2x3-section { padding: 100px 20px; background: var(--bg-secondary); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+        .grid-2x3-container { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
+        .grid-card { background: var(--bg-main); border: 1px solid var(--border); border-radius: 8px; padding: 32px; box-shadow: 0 1px 3px rgba(0,0,0,0.02); }
+        .grid-card h3 { margin: 0 0 12px 0; font-size: 18px; color: var(--text-main); }
+
+        /* NEW: Split Section (Parent View) */
+        .split-section { padding: 100px 20px; max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 60px; align-items: center; }
+        .split-text h2 { margin-top: 0; font-size: 36px; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 16px;}
+
+        /* NEW: Audiences Section */
+        .audience-section { padding: 100px 20px; text-align: center; max-width: 900px; margin: 0 auto; }
+        .audience-pills { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; margin-top: 40px; }
+        .audience-pill { background: var(--bg-hover); color: var(--text-main); border: 1px solid var(--border); padding: 10px 20px; border-radius: 30px; font-weight: 600; font-size: 15px; }
+
+        /* NEW: Tutorial Strip */
+        .tutorial-strip { max-width: 1100px; margin: 0 auto 60px auto; padding: 40px; border: 1px solid var(--border); border-radius: 12px; text-align: center; background: var(--bg-main); }
+        .tutorial-links { display: flex; justify-content: center; gap: 24px; margin-top: 24px; flex-wrap: wrap;}
+        .tutorial-link { color: var(--primary); font-weight: 600; text-decoration: none; display: flex; align-items: center; gap: 6px; }
+        .tutorial-link:hover { text-decoration: underline; }
 
         /* Typography & Content Layouts for Subpages */
         h2 { font-size: 24px; margin-top: 40px; margin-bottom: 16px; }
@@ -148,6 +170,9 @@
             .hero h1 { font-size: 40px; }
             .features-grid, .m-grid { grid-template-columns: 1fr; }
             .mockup-sidebar { display: none; }
+            .workflow-path { flex-direction: column; align-items: stretch; }
+            .workflow-arrow { transform: rotate(90deg); margin: 8px 0; }
+            .grid-2x3-container, .split-section { grid-template-columns: 1fr; }
             footer { flex-direction: column; gap: 20px; text-align: center; }
         }
     </style>
@@ -251,25 +276,128 @@
     </div>
 </div>
 
-    <section class="features" style="margin: 0 -20px;">
-        <div class="features-grid">
-            <div class="feature-item">
-                <div class="feature-icon">🧠</div>
-                <h3>Less to hold in your head</h3>
-                <p>Type what happened after a lesson or session — progress, practice tasks, scores, reminders, little things to follow up — and Lesson Log keeps it organised.</p>
+        <section class="features" style="margin: 0 -20px;">
+            <div class="features-grid">
+                <div class="feature-item">
+                    <div class="feature-icon">🧠</div>
+                    <h3>Less to hold in your head</h3>
+                    <p>Type what happened after a lesson or session — progress, practice tasks, scores, reminders, little things to follow up — and Lesson Log keeps it organised.</p>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">📈</div>
+                    <h3>A clear history for every learner</h3>
+                    <p>Keep track of what each student, client or learner has done over time, from workbook pages and lesson topics to training goals, practice notes and recurring patterns.</p>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">📱</div>
+                    <h3>A more premium update</h3>
+                    <p>Create a clear parent or client update from the notes you already wrote, so people can see progress without you writing a separate summary from scratch.</p>
+                </div>
             </div>
-            <div class="feature-item">
-                <div class="feature-icon">📈</div>
-                <h3>A clear history for every learner</h3>
-                <p>Keep track of what each student, client or learner has done over time, from workbook pages and lesson topics to training goals, practice notes and recurring patterns.</p>
+        </section>
+
+        <section class="workflow-section">
+            <h2 style="font-size: 36px; font-weight: 800; margin-bottom: 16px;">From messy note to organised follow-up</h2>
+            <p style="font-size: 18px; color: var(--text-muted); max-width: 600px; margin: 0 auto;">Dump your raw thoughts into the box at the end of a session. The AI instantly organises it into exactly what you need.</p>
+            
+            <div class="workflow-path">
+                <div class="workflow-step">📝 1. Quick messy note</div>
+                <div class="workflow-arrow">→</div>
+                <div class="workflow-step">📅 2. Timeline updated</div>
+                <div class="workflow-arrow">→</div>
+                <div class="workflow-step">📌 3. Tasks extracted</div>
+                <div class="workflow-arrow">→</div>
+                <div class="workflow-step">🧠 4. Memory saved</div>
+                <div class="workflow-arrow">→</div>
+                <div class="workflow-step">📱 5. Update drafted</div>
             </div>
-            <div class="feature-item">
-                <div class="feature-icon">📱</div>
-                <h3>A more premium update, without extra admin</h3>
-                <p>Create a clear parent or client update from the notes you already wrote, so people can see progress without you writing a separate summary from scratch.</p>
+        </section>
+
+        <section class="grid-2x3-section" style="margin: 0 -20px;">
+            <div style="max-width: 1100px; margin: 0 auto 50px auto; text-align: center;">
+                <h2 style="font-size: 36px; font-weight: 800; margin-bottom: 16px;">What Lesson Log organises for you</h2>
+                <p style="font-size: 18px; color: var(--text-muted);">Everything you need to run your sessions smoothly, all in one place.</p>
             </div>
-        </div>
-    </section>
+            <div class="grid-2x3-container">
+                <div class="grid-card">
+                    <h3>🕰️ Learner Timelines</h3>
+                    <p>Never scroll back through WhatsApp again. Maintain a clear, searchable chronological history of every session, topic covered, and milestone reached.</p>
+                </div>
+                <div class="grid-card">
+                    <h3>📌 Extracted To-Dos</h3>
+                    <p>Stop forgetting the small things. The AI automatically spots action items in your notes (like "print worksheet" or "check form") and builds your global task list.</p>
+                </div>
+                <div class="grid-card">
+                    <h3>🧠 Memory Snapshot</h3>
+                    <p>A living summary of a learner's current state. See their ongoing weaknesses, reliable strengths, and current progress at a single glance before a session starts.</p>
+                </div>
+                <div class="grid-card">
+                    <h3>🌐 Multi-Language Updates</h3>
+                    <p>Teach international clients? Tell the AI to automatically translate your parent/client updates into Spanish, French, Mandarin, and more.</p>
+                </div>
+                <div class="grid-card">
+                    <h3>💷 Payments Ledger</h3>
+                    <p>Track prepaid lesson balances, log cash or transfers, and automatically deduct from their balance the moment a session is logged.</p>
+                </div>
+                <div class="grid-card">
+                    <h3>📚 Resource Library</h3>
+                    <p>A centralized hub to keep your most-used website links, PDFs, practice paper sites, and training videos just one click away.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="split-section">
+            <div class="split-text">
+                <h2>A clearer view for parents or clients</h2>
+                <p style="font-size: 18px;">Deliver a premium experience without the unpaid admin.</p>
+                <p>Lesson Log instantly drafts a warm, professional update directly from your messy session note. You can copy it straight to WhatsApp, or share a secure <strong>Client Portal Link</strong> so they can track their own progress over time.</p>
+                <ul style="margin-top: 20px; font-weight: 500; list-style: none; padding-left: 0;">
+                    <li style="margin-bottom: 12px;">✓ <strong>Zero extra writing</strong> required</li>
+                    <li style="margin-bottom: 12px;">✓ <strong>Sets a professional boundary</strong> with clients</li>
+                    <li style="margin-bottom: 12px;">✓ <strong>Eliminates the 20-minute</strong> "catch-up chat"</li>
+                </ul>
+            </div>
+            <div>
+                <div class="mockup-window" style="height: auto; max-width: 420px; margin: 0 auto;">
+                    <div class="mockup-header" style="justify-content: center; font-size: 12px; font-weight: 700; color: var(--text-muted); background: #f0f0f0; text-transform: uppercase; letter-spacing: 0.5px;">
+                        Client Portal View
+                    </div>
+                    <div style="padding: 30px; background: #fff;">
+                        <div style="font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 12px;">Latest Update</div>
+                        <div style="font-size: 14px; line-height: 1.6; color: var(--text-main); border-left: 3px solid var(--callout-green-border); padding-left: 16px;">
+                            Mia had a fantastic session today focusing on factorising expressions. Her core method is improving quickly!<br><br>
+                            <strong>Focus area:</strong> We are still dropping some negative signs during complex problems, so we will consolidate that next time.<br><br>
+                            <strong>Homework:</strong> Please complete Exercise 4B before next week.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="audience-section">
+            <h2 style="font-size: 36px; font-weight: 800; margin-bottom: 16px;">Built for repeat learners</h2>
+            <p style="font-size: 18px; color: var(--text-muted); max-width: 600px; margin: 0 auto;">If you teach, train, or coach the same people week after week, Lesson Log is built to help you scale.</p>
+            <div class="audience-pills">
+                <div class="audience-pill">🎓 Academic Tutors</div>
+                <div class="audience-pill">🎹 Music Teachers</div>
+                <div class="audience-pill">🏋️ Personal Trainers</div>
+                <div class="audience-pill">🎾 Sports Coaches</div>
+                <div class="audience-pill">🐕 Dog Trainers</div>
+                <div class="audience-pill">🚗 Driving Instructors</div>
+            </div>
+        </section>
+
+        <section style="padding: 0 20px;">
+            <div class="tutorial-strip">
+                <h3 style="margin: 0 0 8px 0; font-size: 22px;">Watch 60-second walkthroughs</h3>
+                <p style="margin: 0; color: var(--text-muted);">See exactly how the workflow feels in practice before you sign up.</p>
+                <div class="tutorial-links">
+                    <a href="#" class="tutorial-link">▶ Logging a session</a>
+                    <a href="#" class="tutorial-link">▶ Managing the to-do list</a>
+                    <a href="#" class="tutorial-link">▶ Sending a client update</a>
+                </div>
+            </div>
+        </section>
 
     </div>
 
