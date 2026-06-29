@@ -257,8 +257,8 @@
                 </div>
             </div>
             
-            <label class="modal-label">Contact Info</label>
-            <input type="text" class="modal-input" placeholder="e.g. Mum (Sarah) - 07700 900000">
+            <label class="modal-label">Parent's Preferred Language</label>
+            <input type="text" class="modal-input" placeholder="e.g. Spanish (Leave blank for English)">
             
             <div style="background: var(--bg-sidebar); border: 1px solid var(--border); padding: 16px; border-radius: 8px; margin-top: 20px;">
                 <label class="modal-label" style="margin-top: 0; color: var(--text-main);">What should Lesson Log remember? (Optional)</label>
@@ -848,8 +848,8 @@
             inputs[2].value = activeStudent.subject || '';
             inputs[3].value = activeStudent.goal || '';
             inputs[4].value = activeStudent.session_rate || '';
-            inputs[5].value = activeStudent.parent_contact || '';
-            inputs[6].value = activeStudent.tracking_rules || '';
+            inputs[5].value = activeStudent.parent_language || ''; // Took the 5 spot!
+            inputs[6].value = activeStudent.tracking_rules || ''; 
             
             document.getElementById('add-student-modal').classList.remove('hidden');
         };
@@ -867,8 +867,8 @@
             const subject = inputs[2].value;
             const goal = inputs[3].value;
             const sessionRate = parseInt(inputs[4].value) || 0; 
-            const parentContact = inputs[5].value;
-            const trackingRules = inputs[6].value;
+            const parentLanguage = inputs[5].value.trim(); 
+            const trackingRules = inputs[6].value; 
 
             if (/^\d/.test(yearGroup)) {
                 yearGroup = 'Year ' + yearGroup;
@@ -879,12 +879,14 @@
             let error;
             if (isEditing) {
                 const { error: updateError } = await client.from('students')
-                    .update({ name, year_group: yearGroup, subject, goal, session_rate: sessionRate, parent_contact: parentContact, tracking_rules: trackingRules })
+                    // Removed parent_contact here
+                    .update({ name, year_group: yearGroup, subject, goal, session_rate: sessionRate, parent_language: parentLanguage, tracking_rules: trackingRules })
                     .eq('id', activeStudentId);
                 error = updateError;
             } else {
                 const { error: insertError } = await client.from('students')
-                    .insert([{ tutor_id: currentUser.id, name, year_group: yearGroup, subject, goal, session_rate: sessionRate, parent_contact: parentContact, tracking_rules: trackingRules }]);
+                    // Removed parent_contact here
+                    .insert([{ tutor_id: currentUser.id, name, year_group: yearGroup, subject, goal, session_rate: sessionRate, parent_language: parentLanguage, tracking_rules: trackingRules }]);
                 error = insertError;
             }
 
@@ -900,11 +902,12 @@
                     document.getElementById('active-student-subject').innerText = subject || '-';
                     document.getElementById('active-student-goal').innerText = goal || '-';
                     
-                    activeStudent = { ...activeStudent, name, year_group: yearGroup, subject, goal, session_rate: sessionRate, parent_contact: parentContact, tracking_rules: trackingRules };
+                    // Removed parent_contact from local state update
+                    activeStudent = { ...activeStudent, name, year_group: yearGroup, subject, goal, session_rate: sessionRate, parent_language: parentLanguage, tracking_rules: trackingRules };
                 }
             }
         };
-
+        
         // View Layout Swapping Engine
         window.switchView = function(viewName) {
             const views = ['view-student', 'view-settings', 'view-resources', 'view-todos', 'view-payments'];
