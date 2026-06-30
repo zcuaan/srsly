@@ -307,21 +307,23 @@
     </div>
 
     <div class="sidebar">
-        <div style="display: flex; flex-direction: column; flex: 1;">
+        <div style="display: flex; flex-direction: column; flex: 1; overflow: hidden;">
             <div class="logo">🪵 Lesson Log</div>
             <div class="subtitle">Never lose track of a student again.</div>
             
             <div class="section-title">Workspace</div>
-            <ul class="student-list" style="margin-bottom: 16px;">
+            <ul class="student-list" style="margin-bottom: 16px; flex-shrink: 0;">
                 <li class="student-item" id="nav-todos" onclick="switchView('todos')">📌 To-do list</li>
                 <li class="student-item" id="nav-payments" onclick="switchView('payments')">💸 Payments Ledger</li>
             </ul>
 
-            <div class="section-title">My Students</div>
-            <ul class="student-list" id="sidebar-student-list">
+            <div class="section-title" style="flex-shrink: 0;">My Students</div>
+            
+            <ul class="student-list" id="sidebar-student-list" style="flex: 1; overflow-y: auto; margin-bottom: 4px; padding-bottom: 8px;">
                 </ul>
-            <ul class="student-list">
-                <li class="student-item" style="color: var(--text-muted); margin-top: 4px;" onclick="openModal()">+ Add Student</li>
+                
+            <ul class="student-list" style="flex-shrink: 0; padding-bottom: 12px;">
+                <li class="student-item" style="color: var(--text-muted);" onclick="openModal()">+ Add Student</li>
             </ul>
         </div>
         
