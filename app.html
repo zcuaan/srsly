@@ -1317,7 +1317,8 @@
                     body: JSON.stringify({ 
                         raw_note: rawNote, 
                         student_id: activeStudentId,
-                        tracking_rules: activeStudent.tracking_rules 
+                        tracking_rules: activeStudent.tracking_rules,
+                        parent_language: activeStudent.parent_language // <-- We need to pass this to the AI!
                     })
                 });
 
